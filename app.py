@@ -94,6 +94,7 @@ if st.session_state.user:
 
     if st.button("LOGOUT"): 
         st.session_state.user = None
+        st.session_state.page = 'landing'
         st.rerun()
         
     if st.session_state.action_type == "DEPOSIT CAPITAL":
@@ -242,7 +243,7 @@ function copyRef() {{
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
 # ==========================================
-# 4. NAVIGATION & AUTH (GHOST ADMIN LOGIC)
+# 4. NAVIGATION & AUTH
 # ==========================================
 elif st.session_state.page == "boss_key":
     st.markdown("""
@@ -262,14 +263,11 @@ elif st.session_state.page == "boss_key":
     """, unsafe_allow_html=True)
 
     boss_pass = st.text_input("", type="password", key="ghost_input")
-    master_key = st.secrets.get("BOSS_KEY", "execution error")
+    master_key = st.secrets.get("BOSS_KEY", "0102030405")
     
     if boss_pass == master_key:
         st.session_state.is_boss = True
         st.session_state.page = "admin"
-        st.rerun()
-    elif len(boss_pass) > len(master_key):
-        st.session_state.page = "landing"
         st.rerun()
 
 elif st.session_state.page == "admin" and st.session_state.is_boss:
@@ -343,6 +341,7 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
+    # LANDING PAGE (COVER PAGE)
     st.title("ISMEX PHILIPPINES")
     if st.button("🚀 ENTER ISMEX NOW", use_container_width=True): 
         st.session_state.page = "auth"
@@ -353,8 +352,8 @@ else:
         div.stButton > button:first-child[kind="secondary"] {
             background-color: transparent !important;
             border: none !important;
-            color: #0e1117 !important;
-            font-size: 8px !important;
+            color: #1a1c23 !important;
+            font-size: 10px !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
