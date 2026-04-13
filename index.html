@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISMEX OFFICIAL</title>
+    <style>
+        /* CSS FIX: Standard format only */
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #0e1117; 
+            height: 100%; 
+        }
+
+        .mask-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* This height hides the bottom 50px logo */
+            height: calc(100% - 50px); 
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            /* This makes the app taller than the mask to push the logo off-screen */
+            height: calc(100% + 50px); 
+            border: none;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff88;
+            font-family: sans-serif;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Connecting to Secure Server...</div>
+    <div class="mask-container">
+        <iframe id="main-app" src="" allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref');
+
+        // Target your actual Streamlit app
+        let targetURL = "https://ismex-philippines-internationalstockmarketexchange.streamlit.app/?embed=true";
+
+        // Pass the referral code if it exists
+        if (ref) {
+            targetURL += "&ref=" + encodeURIComponent(ref);
+        }
+
+        document.getElementById('main-app').src = targetURL;
+    </script>
+</body>
+</html>
