@@ -140,7 +140,7 @@ if st.session_state.user:
 
     # --- REFERRAL SECTION (PRESERVED) ---
     st.markdown("<h4 style='margin-bottom:0px;'>🔗 My Referral Link</h4>", unsafe_allow_html=True)
-    base_url = "https://twee-gith.github.io/ismex-philippines-/"
+    base_url = "https://unfacedinternational-dev.github.io/ismex-philippines/"
     u_ref = st.session_state.user.replace(' ', '%20')
     reflink = base_url + "?ref=" + u_ref
     st.text_input("Link", value=reflink, label_visibility="collapsed")
@@ -227,20 +227,20 @@ function copyRef() {{
         
         is_op = end_dt <= ph_now <= pull_out_end
         ca, cb = st.columns(2)
-        if ca.button("press here to CLAIM INTEREST", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
+        if ca.button("press here to CLAIM INTEREST on schedule", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += roi_total
             item['start_time'] = ph_now.isoformat()
             save(st.session_state.user, data)
             st.rerun()
-        if cb.button("press here to PULL OUT CAPITAL", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
+        if cb.button("press here to PULL OUT CAPITAL on schedule", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += (item['amount'] + roi_total)
             data['inv'].pop(idx)
             save(st.session_state.user, data)
             st.rerun()
 
-    st.markdown("<h4 style='margin-top:20px;'>📜 My History</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin-top:15px;'>📜 My History</h4>", unsafe_allow_html=True)
     for h in reversed(data.get('history', [])):
-        st.markdown(f"<p style='font-size:12px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
 # ==========================================
 # 4. NAVIGATION & AUTH (PRESERVED)
