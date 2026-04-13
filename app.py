@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import time
 
 # ==========================================
-# 1. UI CONFIGURATION (FULL CUSTOM CSS) - PRESERVED
+# 1. UI CONFIGURATION (FULL CUSTOM CSS)
 # ==========================================
 st.set_page_config(page_title="ISMEX Official", layout="wide")
 
@@ -33,7 +33,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATABASE & STATE MANAGEMENT (OPTIMIZED)
+# 2. DATABASE & STATE MANAGEMENT
 # ==========================================
 @st.cache_resource
 def get_db():
@@ -73,7 +73,7 @@ if "ref" in st.query_params:
     st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
 
 # ==========================================
-# 3. USER DASHBOARD & FULL TRANSACTION LOGIC
+# 3. USER DASHBOARD & TRANSACTION LOGIC
 # ==========================================
 if st.session_state.user:
     data = get_user_data(st.session_state.user)
@@ -138,7 +138,6 @@ if st.session_state.user:
                     st.session_state.action_type = None
                     st.rerun()
 
-    # --- REFERRAL SECTION (PRESERVED) ---
     st.markdown("<h4 style='margin-bottom:0px;'>🔗 My Referral Link</h4>", unsafe_allow_html=True)
     base_url = "https://unfacedinternational-dev.github.io/ismex-philippines/"
     u_ref = st.session_state.user.replace(' ', '%20')
@@ -242,82 +241,72 @@ function copyRef() {{
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
-==========================================
-# 4. NAVIGATION & AUTH (GHOST ADMIN UPDATE)
+# ==========================================
+# 4. NAVIGATION & AUTH (GHOST ADMIN LOGIC)
 # ==========================================
 elif st.session_state.page == "boss_key":
-    # Stealth CSS to hide the input box and cursor
     st.markdown("""
         <style>
-        /* Hide the input label and the box borders */
         div[data-testid="stTextInput"] label { display: none; }
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
         }
-        /* Make typed text nearly invisible and hide blinking cursor */
         input[type="password"] {
-            color: #1a1111 !important; 
+            color: #0e1117 !important; 
             caret-color: transparent !important;
             width: 10px !important;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Invisible Input - No placeholder, no label
     boss_pass = st.text_input("", type="password", key="ghost_input")
+    master_key = st.secrets.get("BOSS_KEY", "execution error")
     
-    # Automatic Redirection - No button needed. Logic triggers when key matches.
-    master_key = st.secrets.get("BOSS_KEY", "0102030405")
     if boss_pass == master_key:
         st.session_state.is_boss = True
         st.session_state.page = "admin"
         st.rerun()
-    elif len(boss_pass) > len(master_key): # Reset if they type too much wrong
+    elif len(boss_pass) > len(master_key):
         st.session_state.page = "landing"
         st.rerun()
 
 elif st.session_state.page == "admin" and st.session_state.is_boss:
-    # ... [KEEP ADMIN COMMAND CENTER LOGIC EXACTLY AS IT IS] ...
     st.title("👑 ADMIN")
     if st.button("EXIT"): 
         st.session_state.is_boss = False
         st.session_state.page = "landing"
         st.rerun()
-    # (Rest of your Approval, Member, and History logic stays here)
     reg = load_reg()
     t1, t2, t3 = st.tabs(["📥 APPROVALS", "👥 MEMBERS", "📜 HISTORY"])
-    # ... [REST OF YOUR ADMIN TAB CODE CONTINUES] ...
-
-elif st.session_state.page == "auth":
-    # ... [KEEP LOGIN/REGISTER LOGIC EXACTLY AS IT IS] ...
-
-else:
-    st.title("ISMEX PHILIPPINES")
-    if st.button("🚀 ENTER ISMEX NOW", use_container_width=True): 
-        st.session_state.page = "auth"
-        st.rerun()
-    
-    # Your secret "." button - Styled to be invisible
-    st.markdown("""
-        <style>
-        div.stButton > button:first-child[kind="secondary"] {
-            background-color: transparent !important;
-            border: none !important;
-            color: #1a1a1a !important; /* Blends with dark background */
-            font-size: 5px !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    if st.button("."): 
-        st.session_state.page = "boss_key"
-        st.rerun()
-                        
+    with t1:
+        for u, u_data in reg.items():
+            pend = u_data.get('pending_actions', [])
+            for idx, act in enumerate(list(pend)):
+                with st.expander(f"{act['type']} - {u} (₱{act.get('amount',0):,.2f})"):
+                    c1, c2 = st.columns(2)
+                    if c1.button("APPROVE", key=f"ap_{u}_{idx}"):
+                        ph = datetime.now() + timedelta(hours=8)
+                        user_ref = db.collection("investors").document(u)
+                        @firestore.transactional
+                        def process_approval(transaction, ref):
+                            snap_doc = ref.get(transaction=transaction)
+                            snap = snap_doc.to_dict()
+                            if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
+                                inv_name = snap.get('ref_by', 'OFFICIAL')
+                                if inv_name in reg:
+                                    db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
+                                snap['has_deposited'] = True
+                            if act['type'] in ["DEPOSIT", "REINVEST"]:
+                                snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": ph.isoformat()})
+                            for h in snap.get('history', []):
+                                if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
+                            snap['pending_actions'].pop(idx)
+                            transaction.set(ref, snap)
+                        tx = db.transaction()
+                        process_approval(tx, user_ref)
+                        st.rerun()
                     if c2.button("REJECT", key=f"rj_{u}_{idx}"):
                         if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
                         u_data['pending_actions'].pop(idx)
@@ -358,7 +347,22 @@ else:
     if st.button("🚀 ENTER ISMEX NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-    if st.button("🔒"): 
+    
+    st.markdown("""
+        <style>
+        div.stButton > button:first-child[kind="secondary"] {
+            background-color: transparent !important;
+            border: none !important;
+            color: #0e1117 !important;
+            font-size: 8px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    if st.button("."): 
         st.session_state.page = "boss_key"
         st.rerun()
                     
