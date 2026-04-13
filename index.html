@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISMEX OFFICIAL</title>
+    <title>ISMEX PHILIPPINES</title>
     <style>
         /* CSS FIX: Standard format only */
         body, html { 
@@ -18,14 +18,14 @@
             top: 0;
             left: 0;
             width: 100%;
-            /* This height hides the bottom 50px logo */
+            /* Hides the Streamlit logo at the bottom */
             height: calc(100% - 50px); 
             overflow: hidden;
         }
 
         iframe {
             width: 100%;
-            /* This makes the app taller than the mask to push the logo off-screen */
+            /* Pushes the Streamlit footer off-screen */
             height: calc(100% + 50px); 
             border: none;
         }
@@ -51,8 +51,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const ref = urlParams.get('ref');
 
-        // Target your actual Streamlit app
-        let targetURL = "https://ismex-philippines-internationalstockmarketexchange.streamlit.app/?embed=true";
+        // Updated to your new anonymous project link
+        let targetURL = "https://ismex-philippines.streamlit.app/?embed=true";
 
         // Pass the referral code if it exists
         if (ref) {
