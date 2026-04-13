@@ -15,17 +15,17 @@
 
         .mask-container {
             position: absolute;
-            top: 0;
+            top: 0; 
             left: 0;
             width: 100%;
-            /* Hides the Streamlit logo at the bottom */
+            /* Hides the Streamlit footer/logo */
             height: calc(100% - 50px); 
             overflow: hidden;
         }
 
         iframe {
             width: 100%;
-            /* Pushes the Streamlit footer off-screen */
+            /* Pushes the app content up so the footer is out of view */
             height: calc(100% + 50px); 
             border: none;
         }
@@ -51,10 +51,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const ref = urlParams.get('ref');
 
-        // Updated to your new anonymous project link
+        /* TARGET URL UPDATE: 
+           This now points to your new 'ismex-philippines' deployment.
+        */
         let targetURL = "https://ismex-philippines.streamlit.app/?embed=true";
 
-        // Pass the referral code if it exists
+        // Pass the referral code if it exists in the URL
         if (ref) {
             targetURL += "&ref=" + encodeURIComponent(ref);
         }
