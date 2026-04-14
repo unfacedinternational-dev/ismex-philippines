@@ -13,6 +13,8 @@ st.markdown("""
 <style>
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; display: none !important; }
 .stApp { background-color: #0e1117 !important; color: white; }
+
+/* BALANCE BOX WRAPPER */
 .balance-box {
     background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%);
     padding: 0.8rem; border-radius: 15px; border: 2px solid #00ff88;
@@ -20,17 +22,8 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
 .balance-box h1 { font-size: 1.6rem; margin: 0; color: #00ff88; }
-.cap-card {
-    background: #1c2128; padding: 20px; border-radius: 15px;
-    margin-bottom: 15px; border: 1px solid #30363d;
-}
-.hist-card {
-    background: #1c2128; padding: 15px; border-radius: 12px;
-    margin-bottom: 10px; border-left: 5px solid #00ff88;
-}
-.main .block-container { padding: 1rem !important; }
 
-/* 2x SMALLER NESTED BUTTONS */
+/* 2x SMALLER NESTED BUTTONS FOR CAPITALS */
 .nested-btn {
     display: block;
     width: 100%;
@@ -39,7 +32,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     color: white;
     border-radius: 6px;
     padding: 4px 0;
-    font-size: 9px !important; /* Half size */
+    font-size: 9px !important;
     text-align: center;
     text-decoration: none;
     margin-top: 6px;
@@ -47,6 +40,14 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .nested-btn:hover { border-color: #00ff88; color: #00ff88; }
 .nested-btn.disabled { color: #444; border-color: #222; cursor: not-allowed; pointer-events: none; }
+
+/* FORCING BUTTONS INSIDE BALANCE BOX TO ALIGN */
+[data-testid="column"] div.stButton > button {
+    width: 100% !important;
+    background-color: #1c2128 !important;
+    border: 1px solid #30363d !important;
+    font-size: 10px !important;
+}
 
 /* REGULAR BUTTON BOXES */
 div.stButton > button {
@@ -125,7 +126,7 @@ if st.session_state.user:
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
 
-    # PRESERVING YOUR EXACT LOGIC FOR CLAIM/PULL
+    # URL HANDLER FOR CAPITAL BUTTONS
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
@@ -143,12 +144,22 @@ if st.session_state.user:
         st.query_params.clear()
         st.rerun()
 
-    st.markdown(f"<div class='balance-box'><h3>AVAILABLE BALANCE</h3><h1>₱{max(0.0, wallet):,.2f}</h1></div>", unsafe_allow_html=True)
+    # START BALANCE BOX
+    st.markdown(f"""
+    <div class='balance-box'>
+        <h3>AVAILABLE BALANCE</h3>
+        <h1>₱{max(0.0, wallet):,.2f}</h1>
+    </div>
+    """, unsafe_allow_html=True)
     
+    # NESTING MAIN BUTTONS INSIDE THE THE BOX (USING STREAMLIT COLUMNS INSIDE THE BOX AREA)
     c1, c2, c3 = st.columns(3)
-    if c1.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
-    if c2.button("📤 WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
-    if c3.button("🔄 REINVEST"): st.session_state.action_type = "REINVEST"
+    with c1:
+        if st.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
+    with c2:
+        if st.button("📤 WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
+    with c3:
+        if st.button("🔄 REINVEST"): st.session_state.action_type = "REINVEST"
 
     if st.button("LOGOUT"): 
         st.session_state.user = None
@@ -401,3 +412,4 @@ else:
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
+                    
