@@ -492,13 +492,14 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 st.markdown("---")
 
 elif st.session_state.page == "auth":
+elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     
     with t1:
-        # Added key="login_u" to make it unique
-        u = st.text_input("NAME", key="login_u").upper().strip()
-        p = st.text_input("PIN", type="password", key="login_p")
-        if st.button("GO", key="btn_login"):
+        # Added unique key for login
+        u = st.text_input("NAME", key="l_name").upper().strip()
+        p = st.text_input("PIN", type="password", key="l_pin")
+        if st.button("GO", key="l_btn"):
             r_data = get_user_data(u)
             if r_data and str(r_data.get('pin')) == p: 
                 st.session_state.user = u
@@ -508,16 +509,16 @@ elif st.session_state.page == "auth":
 
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_inv").upper().strip()
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="r_inv").upper().strip()
         
-        # Requirement: First, Middle, Last name guidance
-        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_u").upper().strip()
+        # Request: Full Name guidance
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="r_name").upper().strip()
         
-        # Requirement: Double PIN input for confirmation
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
+        # Request: Double PIN confirmation
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="r_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="r_p2")
         
-        if st.button("CREATE", key="btn_reg"):
+        if st.button("CREATE", key="r_btn"):
             if not nu:
                 st.error("Please input your First, Middle, and Last name.")
             elif len(np) != 6:
@@ -525,6 +526,7 @@ elif st.session_state.page == "auth":
             elif np != np_confirm:
                 st.error("PINs do not match. Please try again.")
             else:
+                # Save to database
                 save(nu, {
                     "pin": np, 
                     "wallet": 0.0, 
@@ -535,7 +537,7 @@ elif st.session_state.page == "auth":
                     "has_deposited": False, 
                     "claimed_refs": []
                 })
-                # Requirement: Proceed to login instruction
+                # Success message
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
