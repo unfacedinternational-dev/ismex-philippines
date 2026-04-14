@@ -152,24 +152,55 @@ if st.session_state.user:
         st.query_params.clear()
         st.rerun()
 
-    st.markdown(f"""
-    <div class='balance-box'>
-        <h3>AVAILABLE BALANCE</h3>
-        <h1>₱{max(0.0, wallet):,.2f}</h1>
-    </div>
+        # ACTION CENTER GRID
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Create two columns for a 2x2 grid layout
+    col_a, col_b = st.columns(2)
+
+    with col_a:
+        if st.button("📥 DEPOSIT", use_container_width=True):
+            st.session_state.page = "deposit"
+            st.rerun()
+        
+        if st.button("🔄 REINVEST", use_container_width=True):
+            st.session_state.page = "reinvest"
+            st.rerun()
+
+    with col_b:
+        if st.button("📤 WITHDRAW", use_container_width=True):
+            st.session_state.page = "withdraw"
+            st.rerun()
+            
+        if st.button("🚪 LOGOUT", use_container_width=True):
+            st.session_state.logged_in = False
+            st.rerun()
+
+    # JOIN COMMUNITY SECTION (STYLIZED BUTTON)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        .community-btn {
+            background: linear-gradient(90deg, #1c2128, #2d333b);
+            border: 1px dashed #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: 0.3s;
+        }
+        .community-btn:active {
+            transform: scale(0.98);
+            background: #2d333b;
+        }
+        </style>
+        <a href="YOUR_TELEGRAM_OR_FB_LINK_HERE" class="community-btn">
+            <span style="font-size: 16px;">🚀 <b>JOIN THE COMMUNITY NOW</b></span><br>
+            <span style="font-size: 10px; color: #8b949e;">Tap here to connect with other investors</span>
+        </a>
     """, unsafe_allow_html=True)
     
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        if st.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
-    with c2:
-        if st.button("📤 WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
-    with c3:
-        if st.button("🔄 REINVEST"): st.session_state.action_type = "REINVEST"
-
-    if st.button("LOGOUT"): 
-        st.session_state.user = None
-        st.rerun()
         
     if st.session_state.action_type == "DEPOSIT CAPITAL":
         with st.form("d"):
