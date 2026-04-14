@@ -128,37 +128,6 @@ if st.session_state.user:
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
-    # ==========================================
-    # 2. RESTORED BALANCE BOX (TOP OF DASHBOARD)
-    # ==========================================
-    st.markdown(f"""
-        <div class="balance-box">
-            <h3>AVAILABLE BALANCE</h3>
-            <h1>₱{wallet:,.2f}</h1>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # ==========================================
-    # 3. ACTION CENTER GRID (KEEP THIS BELOW BALANCE)
-    # ==========================================
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("📥 DEPOSIT", use_container_width=True):
-            st.session_state.action_type = "DEPOSIT CAPITAL"
-            st.rerun()
-        if st.button("🔄 REINVEST", use_container_width=True):
-            st.session_state.action_type = "REINVEST"
-            st.rerun()
-
-    with col_b:
-        if st.button("📤 WITHDRAW", use_container_width=True):
-            st.session_state.action_type = "WITHDRAW BALANCE"
-            st.rerun()
-        if st.button("🚪 LOGOUT", use_container_width=True):
-            st.session_state.user = None
-            st.rerun()
 
     # URL HANDLER FOR CAPITAL BUTTONS (SECURED)
     qp = st.query_params
@@ -183,55 +152,24 @@ if st.session_state.user:
         st.query_params.clear()
         st.rerun()
 
-        # ACTION CENTER GRID
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Create two columns for a 2x2 grid layout
-    col_a, col_b = st.columns(2)
-
-    with col_a:
-        if st.button("📥 DEPOSIT", use_container_width=True):
-            st.session_state.page = "deposit"
-            st.rerun()
-        
-        if st.button("🔄 REINVEST", use_container_width=True):
-            st.session_state.page = "reinvest"
-            st.rerun()
-
-    with col_b:
-        if st.button("📤 WITHDRAW", use_container_width=True):
-            st.session_state.page = "withdraw"
-            st.rerun()
-            
-        if st.button("🚪 LOGOUT", use_container_width=True):
-            st.session_state.logged_in = False
-            st.rerun()
-
-    # JOIN COMMUNITY SECTION (STYLIZED BUTTON)
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-        <style>
-        .community-btn {
-            background: linear-gradient(90deg, #1c2128, #2d333b);
-            border: 1px dashed #00ff88;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-            transition: 0.3s;
-        }
-        .community-btn:active {
-            transform: scale(0.98);
-            background: #2d333b;
-        }
-        </style>
-        <a href="YOUR_TELEGRAM_OR_FB_LINK_HERE" class="community-btn">
-            <span style="font-size: 16px;">🚀 <b>JOIN THE COMMUNITY NOW</b></span><br>
-            <span style="font-size: 10px; color: #8b949e;">Tap here to connect with other investors</span>
-        </a>
+    st.markdown(f"""
+    <div class='balance-box'>
+        <h3>AVAILABLE BALANCE</h3>
+        <h1>₱{max(0.0, wallet):,.2f}</h1>
+    </div>
     """, unsafe_allow_html=True)
     
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        if st.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
+    with c2:
+        if st.button("📤 WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
+    with c3:
+        if st.button("🔄 REINVEST"): st.session_state.action_type = "REINVEST"
+
+    if st.button("LOGOUT"): 
+        st.session_state.user = None
+        st.rerun()
         
     if st.session_state.action_type == "DEPOSIT CAPITAL":
         with st.form("d"):
@@ -482,30 +420,4 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- LANDING PAGE RESTORED ---
-    st.markdown("""
-<div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
-<h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
-<p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">Stop letting your savings lose value. Movement is profit.</p>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
-</div>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
-</div>
-<div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
-<span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
-<span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
-</div>
-</div>
-""", unsafe_allow_html=True)
-
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
-        st.session_state.page = "auth"
-        st.rerun()
-
-    if st.button(".", key="secret_boss"): 
-        st.session_state.page = "boss_key"
-        st.rerun()
+    
