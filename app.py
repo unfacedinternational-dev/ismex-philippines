@@ -21,9 +21,9 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     text-align: center; margin-bottom: 12px;
 }
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
-.balance-box h1 { font-size: 1.9rem; margin: 0; color: #00ff88; }
+.balance-box h1 { font-size: 2.1rem; margin: 0; color: #00ff88; }
 
-/* 2x SMALLER NESTED BUTTONS FOR CAPITALS */
+/* 1x SMALLER NESTED BUTTONS FOR CAPITALS */
 .nested-btn {
     display: block;
     width: 100%;
@@ -32,7 +32,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     color: white;
     border-radius: 6px;
     padding: 4px 0;
-    font-size: 12px !important;
+    font-size: 15px !important;
     text-align: center;
     text-decoration: none;
     margin-top: 6px;
@@ -71,7 +71,7 @@ div.stButton > button:first-child[kind="secondary"] {
     width: auto !important;
     height: auto !important;
     display: block;
-    margin: 20px auto 0 auto !important;
+    margin: 50px auto 0 auto !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -593,8 +593,10 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     with t1:
-        u = st.text_input("NAME").upper().strip()
-        p = st.text_input("PIN", type="password")
+        # Added key="login_name"
+        u = st.text_input("NAME", key="login_name").upper().strip()
+        # Added key="login_pin"
+        p = st.text_input("PIN", type="password", key="login_pin")
         if st.button("GO"):
             r_data = get_user_data(u)
             if r_data and str(r_data.get('pin')) == p: 
@@ -602,21 +604,32 @@ elif st.session_state.page == "auth":
                 st.rerun()
             else:
                 st.error("Invalid Name or PIN")
+
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
-        nu = st.text_input("Full Name (First, Middle, Last Name)").upper().strip()
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6)
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_invitor").upper().strip()
+        
+        # Added key="reg_full_name"
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_full_name").upper().strip()
+        
+        # Added unique keys for the double PIN fields
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_pin1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_pin2")
+        
         if st.button("CREATE"):
-            if not nu: st.error("Please input your First, Middle, and Last name.")
-            elif len(np) != 6: st.error("PIN must be exactly 6 digits.")
-            elif np != np_confirm: st.error("PINs do not match. Please try again.")
+            if not nu:
+                st.error("Please input your First, Middle, and Last name.")
+            elif len(np) != 6:
+                # Corrected your request: Double PIN confirmation
+                st.error("PIN must be exactly 6 digits.")
+            elif np != np_confirm:
+                st.error("PINs do not match. Please try again.")
             else:
                 save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
                 st.success("Registration Successful! Please proceed to LOGIN now.")
-                time.sleep(2); st.rerun()
-
+                time.sleep(2)
+                st.rerun()
+    
 else:
     # --- FULL ADVERTISEMENT LANDING PAGE ---
     st.markdown("""
