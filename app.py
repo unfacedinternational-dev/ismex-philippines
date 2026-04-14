@@ -226,18 +226,18 @@ function copyRef() {{
         
         is_op = end_dt <= ph_now <= pull_out_end
         ca, cb = st.columns(2)
-        if ca.button("CLAIM INTEREST", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
+        if ca.button("press here to CLAIM INTEREST on schedule", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += roi_total
             item['start_time'] = ph_now.isoformat()
             save(st.session_state.user, data)
             st.rerun()
-        if cb.button("PULL OUT CAPITAL", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
+        if cb.button("press to PULL OUT CAPITAL on schedule", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += (item['amount'] + roi_total)
             data['inv'].pop(idx)
             save(st.session_state.user, data)
             st.rerun()
 
-    st.markdown("<h4 style='margin-top:15px;'>📜 My History</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='margin-top:10px;'>📜 My History</h4>", unsafe_allow_html=True)
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
@@ -352,7 +352,7 @@ else:
     if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-    if st.button("🔒"): 
+    if st.button("⛔"): 
         st.session_state.page = "boss_key"
         st.rerun()
         
