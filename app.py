@@ -45,7 +45,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 [data-testid="column"] div.stButton > button {
     width: 100% !important;
     background-color: #1c2128 !important;
-    border: 2px solid #00ff88 !important; /* GLOWING GREEN BORDER */
+    border: 2px solid #00ff88 !important; 
     color: #00ff88 !important;
     font-weight: bold !important;
     box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
@@ -91,16 +91,19 @@ def get_db():
 db = get_db()
 
 def get_user_data(username):
+    if not db: return None
     doc = db.collection("investors").document(username).get()
     return doc.to_dict() if doc.exists else None
 
 def load_reg(): 
+    if not db: return {}
     return {doc.id: doc.to_dict() for doc in db.collection("investors").stream()}
 
 def save(n, d): 
-    db.collection("investors").document(n).set(d)
+    if db: db.collection("investors").document(n).set(d)
 
 def atomic_update(username, update_dict):
+    if not db: return
     user_ref = db.collection("investors").document(username)
     @firestore.transactional
     def _do(transaction, ref):
@@ -137,14 +140,13 @@ if st.session_state.user:
         item = data['inv'][idx]
         roi_total = item['amount'] * 0.20
         
-        # Security: Create unique ID for current claim window
         current_cycle_id = datetime.fromisoformat(item['start_time']).strftime("%Y%m%d%H")
         last_claim = item.get('last_claim_id', "")
 
         if act_type == "claim" and last_claim != current_cycle_id:
             data['wallet'] += roi_total
             item['start_time'] = ph_now.isoformat()
-            item['last_claim_id'] = current_cycle_id # Mark as claimed
+            item['last_claim_id'] = current_cycle_id
             save(st.session_state.user, data)
         elif act_type == "pull" and last_claim != current_cycle_id:
             data['wallet'] += (item['amount'] + roi_total)
@@ -153,7 +155,6 @@ if st.session_state.user:
         st.query_params.clear()
         st.rerun()
 
-    # START BALANCE BOX
     st.markdown(f"""
     <div class='balance-box'>
         <h3>AVAILABLE BALANCE</h3>
@@ -161,7 +162,6 @@ if st.session_state.user:
     </div>
     """, unsafe_allow_html=True)
     
-    # MAIN BUTTONS
     c1, c2, c3 = st.columns(3)
     with c1:
         if st.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
@@ -251,7 +251,6 @@ async function copyRef() {{
 """
     st.components.v1.html(copy_js, height=60)
 
-    # RECTIFIED REFERRAL TABLE
     st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
     st.markdown("<div style='background:#1c2128; padding:10px; border-radius:10px; border:1px solid #30363d;'>", unsafe_allow_html=True)
     h1, h2, h3, h4 = st.columns([2, 1.5, 1.5, 1.5])
@@ -412,11 +411,29 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- LANDING PAGE RESTORED ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
 <p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">Stop letting your savings lose value. Movement is profit.</p>
 <div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
 <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% 
+<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
+</div>
+<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
+<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
+<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
+</div>
+<div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
+<span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
+<span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
+        st.session_state.page = "auth"
+        st.rerun()
+
+    if st.button(".", key="secret_boss"): 
+        st.session_state.page = "boss_key"
+        st.rerun()
