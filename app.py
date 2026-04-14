@@ -493,42 +493,53 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    
     with t1:
-        u = st.text_input("NAME").upper().strip()
-        p = st.text_input("PIN", type="password")
-        if st.button("GO"):
-            r_data = get_user_data(u)
-            if r_data and str(r_data.get('pin')) == p: 
-                st.session_state.user = u
-                st.rerun()
-elif st.session_state.page == "boss_key":
-    boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
-    if boss_pass:
-        master_key = st.secrets.get("BOSS_KEY", "0102030405")
-        if boss_pass == master_key:
-            st.session_state.is_boss = True
-            st.session_state.page = "admin"
-            st.rerun()
-
-elif st.session_state.page == "auth":
-    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
-    with t1:
-        u = st.text_input("NAME").upper().strip()
-        p = st.text_input("PIN", type="password")
-        if st.button("GO"):
+        # Added key="login_u" to make it unique
+        u = st.text_input("NAME", key="login_u").upper().strip()
+        p = st.text_input("PIN", type="password", key="login_p")
+        if st.button("GO", key="btn_login"):
             r_data = get_user_data(u)
             if r_data and str(r_data.get('pin')) == p: 
                 st.session_state.user = u
                 st.rerun()
             else:
                 st.error("Invalid Name or PIN")
+
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
-        nu = st.text_input("Full Name (First, Middle, Last Name)").upper().strip()
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)# ==========================================
-# 4. NAVIGATION & AUTH
-# ==========================================
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_inv").upper().strip()
+        
+        # Requirement: First, Middle, Last name guidance
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_u").upper().strip()
+        
+        # Requirement: Double PIN input for confirmation
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
+        
+        if st.button("CREATE", key="btn_reg"):
+            if not nu:
+                st.error("Please input your First, Middle, and Last name.")
+            elif len(np) != 6:
+                st.error("PIN must be exactly 6 digits.")
+            elif np != np_confirm:
+                st.error("PINs do not match. Please try again.")
+            else:
+                save(nu, {
+                    "pin": np, 
+                    "wallet": 0.0, 
+                    "ref_by": inv_n, 
+                    "inv": [], 
+                    "history": [], 
+                    "pending_actions": [], 
+                    "has_deposited": False, 
+                    "claimed_refs": []
+                })
+                # Requirement: Proceed to login instruction
+                st.success("Registration Successful! Please proceed to LOGIN now.")
+                time.sleep(2)
+                st.rerun()
+            
 elif st.session_state.page == "boss_key":
     boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
     if boss_pass:
