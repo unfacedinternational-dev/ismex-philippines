@@ -129,18 +129,24 @@ if st.session_state.user:
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
 
-    # URL HANDLER FOR CAPITAL BUTTONS
+    # URL HANDLER FOR CAPITAL BUTTONS (SECURED)
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
         idx = int(qp["idx"])
         item = data['inv'][idx]
         roi_total = item['amount'] * 0.20
-        if act_type == "claim":
+        
+        # Security: Create unique ID for current claim window
+        current_cycle_id = datetime.fromisoformat(item['start_time']).strftime("%Y%m%d%H")
+        last_claim = item.get('last_claim_id', "")
+
+        if act_type == "claim" and last_claim != current_cycle_id:
             data['wallet'] += roi_total
             item['start_time'] = ph_now.isoformat()
+            item['last_claim_id'] = current_cycle_id # Mark as claimed
             save(st.session_state.user, data)
-        elif act_type == "pull":
+        elif act_type == "pull" and last_claim != current_cycle_id:
             data['wallet'] += (item['amount'] + roi_total)
             data['inv'].pop(idx)
             save(st.session_state.user, data)
@@ -185,14 +191,24 @@ if st.session_state.user:
             bank = st.text_input("Bank name, Account name, Account#")
             if st.form_submit_button("SUBMIT"):
                 if wallet >= amt_w:
-                    new_w = max(0.0, wallet - amt_w)
-                    pends = data.get('pending_actions', [])
-                    pends.append({"type":"WITHDRAW", "amount":amt_w, "request_id":req_id, "details":bank})
-                    hist = data.get('history', [])
-                    hist.append({"type":"WITHDRAW", "amount":amt_w, "status":"PENDING", "request_id":req_id, "date":ph_now.strftime("%Y-%m-%d")})
-                    atomic_update(st.session_state.user, {"wallet": new_w, "pending_actions": pends, "history": hist})
-                    st.success("Submitted!")
-                    time.sleep(1); st.session_state.action_type = None; st.rerun()
+                    user_ref = db.collection("investors").document(st.session_state.user)
+                    @firestore.transactional
+                    def exec_withdraw(transaction, ref):
+                        snap = ref.get(transaction=transaction).to_dict()
+                        curr_w = float(snap.get('wallet', 0))
+                        if curr_w >= amt_w:
+                            new_bal = max(0.0, curr_w - amt_w)
+                            pends = snap.get('pending_actions', [])
+                            pends.append({"type":"WITHDRAW", "amount":amt_w, "request_id":req_id, "details":bank})
+                            hist = snap.get('history', [])
+                            hist.append({"type":"WITHDRAW", "amount":amt_w, "status":"PENDING", "request_id":req_id, "date":ph_now.strftime("%Y-%m-%d")})
+                            transaction.update(ref, {"wallet": new_bal, "pending_actions": pends, "history": hist})
+                            return True
+                        return False
+                    
+                    if exec_withdraw(db.transaction(), user_ref):
+                        st.success("Submitted!")
+                        time.sleep(1); st.session_state.action_type = None; st.rerun()
                 else:
                     st.error(f"Insufficient Balance! (₱{wallet:,.2f})")
 
@@ -218,12 +234,17 @@ if st.session_state.user:
     
     copy_js = f"""
 <script>
-function copyRef() {{
-    const el = document.createElement('textarea');
-    el.value = '{reflink}';
-    document.body.appendChild(el); el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el); alert('Referral Link Copied!');
+async function copyRef() {{
+    try {{
+        await navigator.clipboard.writeText('{reflink}');
+        alert('Referral Link Copied!');
+    }} catch (err) {{
+        const el = document.createElement('textarea');
+        el.value = '{reflink}';
+        document.body.appendChild(el); el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el); alert('Referral Link Copied!');
+    }}
 }}
 </script>
 <button onclick="copyRef()" style="width: 100%; background-color: #1c2128; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">📋 COPY REFERRAL LINK</button>
@@ -398,23 +419,4 @@ else:
 <p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">Stop letting your savings lose value. Movement is profit.</p>
 <div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
 <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
-</div>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
-</div>
-<div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
-<span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
-<span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
-</div>
-</div>
-""", unsafe_allow_html=True)
-
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
-        st.session_state.page = "auth"
-        st.rerun()
-
-    if st.button(".", key="secret_boss"): 
-        st.session_state.page = "boss_key"
- 
+<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% 
