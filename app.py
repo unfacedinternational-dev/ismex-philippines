@@ -327,7 +327,6 @@ async function copyRef() {{
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
-elif 
 # ==========================================
 # 4. NAVIGATION & AUTH
 # ==========================================
