@@ -387,7 +387,20 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
                         st.rerun()
-        with t2:
+        elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME").upper().strip()
+        p = st.text_input("PIN", type="password")
+        if st.button("GO"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+            else:
+                st.error("Invalid Name or PIN")
+
+    with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
         inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
         
@@ -421,8 +434,9 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
-        
+
 else:
+    # --- LANDING PAGE (RESTORING BASE DESIGN) ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -441,9 +455,12 @@ else:
 </div>
 </div>
 """, unsafe_allow_html=True)
+
     if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
+
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
+    
