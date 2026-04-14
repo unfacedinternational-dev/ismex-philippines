@@ -327,10 +327,12 @@ async function copyRef() {{
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
-# ==========================================
-# 4. NAVIGATION & AUTH
-# ==========================================
+# --- THIS STARTS AT LINE 330 (Right after your History loop) ---
+
 elif st.session_state.page == "boss_key":
+    # ==========================================
+    # 4. NAVIGATION & AUTH
+    # ==========================================
     boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
     if boss_pass:
         master_key = st.secrets.get("BOSS_KEY", "0102030405")
@@ -345,6 +347,7 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
         st.session_state.is_boss = False
         st.session_state.page = "landing"
         st.rerun()
+    
     reg = load_reg()
     t1, t2, t3 = st.tabs(["📥 APPROVALS", "👥 MEMBERS", "📜 HISTORY"])
     with t1:
