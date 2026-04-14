@@ -21,44 +21,38 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
 .balance-box h1 { font-size: 1.6rem; margin: 0; color: #00ff88; }
 .cap-card {
-    background: #1c2128; padding: 20px; border-radius: 15px;
-    margin-bottom: 15px; border: 1px solid #30363d;
-}
-.hist-card {
-    background: #1c2128; padding: 15px; border-radius: 12px;
-    margin-bottom: 10px; border-left: 5px solid #00ff88;
-}
-.main .block-container { padding: 1rem !important; }
-
-/* RESTORING BOXES TO BUTTONS */
-div.stButton > button {
-    border: 1px solid #30363d !important;
-    background-color: #1c2128 !important;
-    color: white !important;
-    border-radius: 8px !important;
-    padding: 10px 20px !important;
+    background: #1c2128; padding: 15px; border-radius: 10px; 
+    border-left: 5px solid #00ff88; margin-bottom: 10px;
 }
 
-/* SMALLER BOXES FOR CLAIM/PULL OUT */
-div[data-testid="stVerticalBlock"] div.stButton > button {
-    font-size: 12px !important;
-    padding: 5px 10px !important;
+/* 2x SMALLER BUTTONS FOR CLAIM/PULL OUT */
+.small-btn {
+    background-color: transparent !important;
+    border: 1px solid #00ff88 !important;
+    color: #00ff88 !important;
+    border-radius: 5px !important;
+    font-size: 9px !important;
+    padding: 2px 5px !important;
+    width: 100%;
+    margin-top: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.small-btn:disabled {
+    border-color: #30363d !important;
+    color: #8b949e !important;
 }
 
-/* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
-div.stButton > button:first-child[kind="secondary"], 
-button[key="secret_boss"] {
+/* SECRET ADMIN ENTRY */
+div.stButton > button:first-child[kind="secondary"] {
     background-color: transparent !important;
     color: white !important;
     border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
     padding: 0 !important;
     font-size: 12px !important;
-    width: auto !important;
-    height: auto !important;
-    display: block;
     margin: 20px auto 0 auto !important;
+    display: block;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -238,35 +232,46 @@ function copyRef() {{
         progress = min(1.0, elapsed / 604800)
         roi_total = item['amount'] * 0.20
         live_profit = progress * roi_total
+        is_op = end_dt <= ph_now <= pull_out_end
+        dis_attr = "" if is_op else "disabled"
 
+        # FORCED INSIDE THE BOX + 2X SMALLER
         st.markdown(f"""
-<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px;">
+<div class="cap-card">
     <div style="display: flex; justify-content: space-between;">
-        <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
-        <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
+        <span style="color: #8b949e; font-weight: bold; font-size: 0.9em;">CAPITAL: ₱{item['amount']:,.2f}</span>
+        <span style="color: #00ff88; font-weight: bold; font-size: 0.9em;">ROI: ₱{roi_total:,.2f}</span>
     </div>
-    <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
-    <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
-        ⚠️ <b>STRICT 1-HOUR WINDOW:</b><br>
-        Capital & Interest ready to pull out on:<br>
-        <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b> until <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
-        <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
+    <div style="margin-top: 5px; color: white; font-size: 0.8em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
+    <div style="color: #e3b341; font-size: 0.7em; margin-top: 8px; line-height: 1.2;">
+        ⚠️ <b>1-HOUR WINDOW:</b><br>
+        Ready on: <b>{end_dt.strftime('%m-%d %I:%M %p')}</b>
+    </div>
+    <div style="margin-top: 10px;">
+        <a href="/?act=claim&idx={idx}" target="_self"><button class="small-btn" {dis_attr}>CLAIM INTEREST</button></a>
+        <a href="/?act=pull&idx={idx}" target="_self"><button class="small-btn" {dis_attr}>PULL OUT CAPITAL</button></a>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+    # Logic for URL Actions
+    q_params = st.query_params
+    if "act" in q_params:
+        idx_act = int(q_params["idx"])
+        act_type = q_params["act"]
+        inv_item = data['inv'][idx_act]
+        inv_roi = inv_item['amount'] * 0.20
         
-        is_op = end_dt <= ph_now <= pull_out_end
-        ca, cb = st.columns(2)
-        if ca.button("press here to CLAIM INTEREST on schedule", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
-            data['wallet'] += roi_total
-            item['start_time'] = ph_now.isoformat()
-            save(st.session_state.user, data)
-            st.rerun()
-        if cb.button("press to PULL OUT CAPITAL on schedule", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
-            data['wallet'] += (item['amount'] + roi_total)
-            data['inv'].pop(idx)
-            save(st.session_state.user, data)
-            st.rerun()
+        if act_type == "claim":
+            data['wallet'] += inv_roi
+            inv_item['start_time'] = ph_now.isoformat()
+        elif act_type == "pull":
+            data['wallet'] += (inv_item['amount'] + inv_roi)
+            data['inv'].pop(idx_act)
+            
+        save(st.session_state.user, data)
+        st.query_params.clear()
+        st.rerun()
 
     st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
@@ -276,10 +281,9 @@ function copyRef() {{
 # 4. NAVIGATION & AUTH
 # ==========================================
 elif st.session_state.page == "boss_key":
-    boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
+    boss_pass = st.text_input("error execution", type="password")
     if boss_pass:
-        master_key = st.secrets.get("BOSS_KEY", "0102030405")
-        if boss_pass == master_key:
+        if boss_pass == st.secrets.get("BOSS_KEY", "0102030405"):
             st.session_state.is_boss = True
             st.session_state.page = "admin"
             st.rerun()
@@ -296,15 +300,13 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
         for u, u_data in reg.items():
             pend = u_data.get('pending_actions', [])
             for idx, act in enumerate(list(pend)):
-                with st.expander(f"{act['type']} - {u} (₱{act.get('amount',0):,.2f})"):
-                    c1, c2 = st.columns(2)
-                    if c1.button("APPROVE", key=f"ap_{u}_{idx}"):
+                with st.expander(f"{act['type']} - {u}"):
+                    if st.button("APPROVE", key=f"ap_{u}_{idx}"):
                         ph = datetime.now() + timedelta(hours=8)
                         user_ref = db.collection("investors").document(u)
                         @firestore.transactional
-                        def process_approval(transaction, ref):
-                            snap_doc = ref.get(transaction=transaction)
-                            snap = snap_doc.to_dict()
+                        def proc(transaction, ref):
+                            snap = ref.get(transaction=transaction).to_dict()
                             if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
                                 inv_name = snap.get('ref_by', 'OFFICIAL')
                                 if inv_name in reg:
@@ -316,23 +318,10 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                                 if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
                             snap['pending_actions'].pop(idx)
                             transaction.set(ref, snap)
-                        tx = db.transaction()
-                        process_approval(tx, user_ref)
-                        st.rerun()
-                    if c2.button("REJECT", key=f"rj_{u}_{idx}"):
-                        if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
-                        u_data['pending_actions'].pop(idx)
-                        save(u, u_data)
+                        proc(db.transaction(), user_ref)
                         st.rerun()
     with t2:
-        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet'), "REF": i.get('ref_by')} for n, i in reg.items()])
-    with t3:
-        for u_n, u_i in reg.items():
-            u_h = u_i.get('history', [])
-            if u_h:
-                st.markdown(f"**Investor: {u_n}**")
-                for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
-                st.markdown("---")
+        st.table([{"NAME": n, "WALLET": i.get('wallet')} for n, i in reg.items()])
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
@@ -355,31 +344,16 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- LANDING PAGE ---
     st.markdown("""
-<div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
-<h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
-<p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">Stop letting your savings lose value. Movement is profit.</p>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
-</div>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
-</div>
-<div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
-<span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
-<span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
-</div>
+<div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px; text-align: center;">
+<h1 style="color: #00ff88;">FORCE YOUR MONEY TO WORK</h1>
+<p style="color: #8b949e;">20% ROI + 20% UNLIMITED DIVIDENDS</p>
 </div>
 """, unsafe_allow_html=True)
-
     if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-            
+                    
