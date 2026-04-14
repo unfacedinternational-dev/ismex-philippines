@@ -21,7 +21,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     text-align: center; margin-bottom: 12px;
 }
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
-.balance-box h1 { font-size: 1.6rem; margin: 0; color: #00ff88; }
+.balance-box h1 { font-size: 1.9rem; margin: 0; color: #00ff88; }
 
 /* 2x SMALLER NESTED BUTTONS FOR CAPITALS */
 .nested-btn {
