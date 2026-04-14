@@ -29,6 +29,18 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     margin-bottom: 10px; border-left: 5px solid #00ff88;
 }
 .main .block-container { padding: 1rem !important; }
+
+/* STEALTH ADMIN DOT */
+div.stButton > button:first-child[kind="secondary"] {
+    background-color: transparent !important;
+    color: rgba(0,0,0,0) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -245,7 +257,6 @@ function copyRef() {{
 # 4. NAVIGATION & AUTH
 # ==========================================
 elif st.session_state.page == "boss_key":
-    # Clean, minimal login. No buttons, no extra boxes.
     boss_pass = st.text_input("Key", type="password", placeholder="...")
     if boss_pass:
         master_key = st.secrets.get("BOSS_KEY", "0102030405")
@@ -305,30 +316,27 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
                 st.markdown("---")
 
-elif st.session_state.page == "boss_key":
-    # Clean, minimal login. No buttons, no extra boxes.
-    boss_pass = st.text_input("Key", type="password", placeholder="...")
-    if boss_pass:
-        master_key = st.secrets.get("BOSS_KEY", "0102030405")
-        if boss_pass == master_key:
-            st.session_state.is_boss = True
-            st.session_state.page = "admin"
-            st.rerun()
-
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
-    # ... (Keep your existing Auth code here)
+    with t1:
+        u = st.text_input("NAME").upper().strip()
+        p = st.text_input("PIN", type="password")
+        if st.button("GO"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+    with t2:
+        inv_n = st.session_state.get('captured_ref', 'OFFICIAL')
+        st.write(f"Invitor: {inv_n}")
+        nu = st.text_input("Full Name").upper().strip()
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
+        if st.button("CREATE"):
+            if nu and len(np) == 6:
+                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
+                st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- TOP NOTICE (ABOVE FRAME) ---
-    st.markdown("""
-<div style="text-align: center; margin-bottom: 10px;">
-    <span style="color: #e3b341; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;">
-        ⚠️ NOTE: THIS SITE IS BEST DISPLAYED IN CHROME / BROWSER
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
     # --- AGGRESSIVE LANDING PAGE ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
@@ -352,8 +360,9 @@ else:
     if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-    if st.button("⛔"): 
+
+    # SECRET DOT (Invisible Entry)
+    if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-        
-                    
+    
