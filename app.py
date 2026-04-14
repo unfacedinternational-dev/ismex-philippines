@@ -138,7 +138,6 @@ if st.session_state.user:
                     st.session_state.action_type = None
                     st.rerun()
 
-    # --- REFERRAL SECTION ---
     st.markdown("<h4 style='margin-bottom:0px;'>🔗 My Referral Link</h4>", unsafe_allow_html=True)
     base_url = "https://unfacedinternational-dev.github.io/ismex-philippines/"
     u_ref = st.session_state.user.replace(' ', '%20')
@@ -227,12 +226,12 @@ function copyRef() {{
         
         is_op = end_dt <= ph_now <= pull_out_end
         ca, cb = st.columns(2)
-        if ca.button("press here to CLAIM INTEREST on schedule", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
+        if ca.button("CLAIM INTEREST", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += roi_total
             item['start_time'] = ph_now.isoformat()
             save(st.session_state.user, data)
             st.rerun()
-        if cb.button("press here to PULL OUT CAPITAL on schedule", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
+        if cb.button("PULL OUT CAPITAL", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
             data['wallet'] += (item['amount'] + roi_total)
             data['inv'].pop(idx)
             save(st.session_state.user, data)
@@ -274,32 +273,24 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                     if c1.button("APPROVE", key=f"ap_{u}_{idx}"):
                         ph = datetime.now() + timedelta(hours=8)
                         user_ref = db.collection("investors").document(u)
-                        
                         @firestore.transactional
                         def process_approval(transaction, ref):
                             snap_doc = ref.get(transaction=transaction)
                             snap = snap_doc.to_dict()
-                            
                             if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
                                 inv_name = snap.get('ref_by', 'OFFICIAL')
                                 if inv_name in reg:
                                     db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
                                 snap['has_deposited'] = True
-                            
                             if act['type'] in ["DEPOSIT", "REINVEST"]:
                                 snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": ph.isoformat()})
-                            
                             for h in snap.get('history', []):
-                                if h.get('request_id') == act.get('request_id'): 
-                                    h['status'] = "CONFIRMED"
-                            
+                                if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
                             snap['pending_actions'].pop(idx)
                             transaction.set(ref, snap)
-
                         tx = db.transaction()
                         process_approval(tx, user_ref)
                         st.rerun()
-                        
                     if c2.button("REJECT", key=f"rj_{u}_{idx}"):
                         if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
                         u_data['pending_actions'].pop(idx)
@@ -336,32 +327,31 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- AGGRESSIVE LANDING PAGE ---
+    # --- AGGRESSIVE LANDING PAGE (FIXED HTML) ---
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #1c2128 0%, #0e1117 100%); padding: 30px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
-        <h1 style="color: #00ff88; font-size: 2.2rem; text-align: center; margin-bottom: 5px;">FORCE YOUR MONEY TO WORK</h1>
-        <p style="text-align: center; color: #8b949e; font-size: 1.1rem; margin-bottom: 25px;">
+    <div style="background: linear-gradient(135deg, #1c2128 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
+        <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
+        <p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">
             Stop letting your savings lose value. Movement is profit.
         </p>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-            <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88;">
-                <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
-                <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
-                    While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.
-                </p>
-            </div>
-            <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88;">
-                <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
-                <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
-                    Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.
-                </p>
-            </div>
+        <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
+            <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
+            <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
+                While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.
+            </p>
+        </div>
+        
+        <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
+            <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
+                Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.
+            </p>
         </div>
         
         <div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
             <span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
-            <span style="color: #ffffff; font-size: 0.8rem; letter-spacing: 1px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
+            <span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -369,7 +359,7 @@ else:
     if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-    if st.button("🔒"): 
+    if st.button("⛔"): 
         st.session_state.page = "boss_key"
         st.rerun()
-            
+                                                               
