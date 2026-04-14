@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import time
 
 # ==========================================
-# 1. UI CONFIGURATION (FULL CUSTOM CSS) - PRESERVED
+# 1. UI CONFIGURATION (FULL CUSTOM CSS)
 # ==========================================
 st.set_page_config(page_title="ISMEX Official", layout="wide")
 
@@ -30,22 +30,25 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .main .block-container { padding: 1rem !important; }
 
-/* STEALTH ADMIN DOT */
+/* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
 div.stButton > button:first-child[kind="secondary"] {
     background-color: transparent !important;
-    color: rgba(0,0,0,0) !important;
+    color: white !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    width: 1px !important;
-    height: 1px !important;
+    font-size: 12px !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 20px auto 0 auto !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATABASE & STATE MANAGEMENT (OPTIMIZED)
+# 2. DATABASE & STATE MANAGEMENT
 # ==========================================
 @st.cache_resource
 def get_db():
@@ -85,7 +88,7 @@ if "ref" in st.query_params:
     st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
 
 # ==========================================
-# 3. USER DASHBOARD & FULL TRANSACTION LOGIC
+# 3. USER DASHBOARD
 # ==========================================
 if st.session_state.user:
     data = get_user_data(st.session_state.user)
@@ -264,7 +267,6 @@ elif st.session_state.page == "boss_key":
             st.session_state.is_boss = True
             st.session_state.page = "admin"
             st.rerun()
-            
 
 elif st.session_state.page == "admin" and st.session_state.is_boss:
     st.title("👑 ADMIN")
@@ -337,7 +339,7 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    # --- AGGRESSIVE LANDING PAGE ---
+    # --- LANDING PAGE ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -357,12 +359,13 @@ else:
 </div>
 """, unsafe_allow_html=True)
 
+    # RESTORED MAIN BUTTON
     if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
 
-    # SECRET DOT (Invisible Entry)
-    if st.button(".", key="secret_boss"): 
+    # DISCREET SECRET ENTRY (Plain ⛔ below the button)
+    if st.button("⛔", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-    
+                
