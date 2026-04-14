@@ -248,57 +248,61 @@ async function copyRef() {{
 """
     st.components.v1.html(copy_js, height=60)
 
-        # RECTIFIED REFERRAL TABLE (MOBILE OPTIMIZED)
+            # VERTICAL SMART CARDS FOR REFERRALS
     st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
-    st.markdown("<div style='background:#1c2128; padding:8px; border-radius:10px; border:1px solid #30363d;'>", unsafe_allow_html=True)
     
-    # Using smaller ratios to force horizontal alignment
-    h1, h2, h3, h4 = st.columns([1.5, 1.2, 1.2, 1.1])
-    h1.caption("INVESTOR")
-    h2.caption("1st DEP")
-    h3.caption("COMM.")
-    h4.caption("ACTION")
-    st.markdown("<hr style='margin:5px 0; border-color:#30363d;'>", unsafe_allow_html=True)
-                    
-    my_refs_query = db.collection("investors").where("ref_by", "==", st.session_state.user).stream()
+    # We pull all data once to ensure we don't miss any invites
+    reg_ref = load_reg()
+    my_refs = [name for name, info in reg_ref.items() if info.get('ref_by') == st.session_state.user]
     claimed_list = data.get('claimed_refs', [])
-    has_refs = False
 
-    for ref_doc in my_refs_query:
-        has_refs = True
-        ref_name = ref_doc.id
-        ref_data = ref_doc.to_dict()
-        ref_invest = ref_data.get('inv', [])
-        f_dep = ref_invest[0]['amount'] if ref_invest else 0
-        comm = f_dep * 0.20
-        
-        with st.container():
-            # Matching the same ratios here
-            col1, col2, col3, col4 = st.columns([1.5, 1.2, 1.2, 1.1])
+    if not my_refs:
+        st.info("No referrals yet. Share your link to start earning!")
+    else:
+        for ref_name in my_refs:
+            ref_data = reg_ref[ref_name]
+            ref_invest = ref_data.get('inv', [])
             
-            # Using 11px font to ensure it fits one line on mobile
-            col1.markdown(f"<p style='font-size:11px; margin:0; white-space:nowrap; overflow:hidden;'>{ref_name}</p>", unsafe_allow_html=True)
-            col2.markdown(f"<p style='font-size:11px; margin:0;'>₱{f_dep:,.0f}</p>", unsafe_allow_html=True)
-            col3.markdown(f"<p style='font-size:11px; margin:0; color:#00ff88;'>₱{comm:,.0f}</p>", unsafe_allow_html=True)
+            # Get first deposit amount
+            f_dep = float(ref_invest[0]['amount']) if ref_invest else 0.0
+            comm = f_dep * 0.20
             
+            # Create a clean vertical card for each invite
+            st.markdown(f"""
+            <div style="background: #1c2128; padding: 12px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #8b949e; font-size: 12px; font-weight: bold;">INVESTOR</span>
+                    <span style="color: white; font-size: 14px;">{ref_name}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #8b949e; font-size: 12px;">1st DEPOSIT</span>
+                    <span style="color: white; font-size: 13px;">₱{f_dep:,.0f}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #8b949e; font-size: 12px;">COMMISSION</span>
+                    <span style="color: #00ff88; font-size: 14px; font-weight: bold;">₱{comm:,.0f}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Action Button below the data card
             if f_dep > 0 and ref_name not in claimed_list:
-                # Small button to fit the column
-                if col4.button("GET", key=f"r_{ref_name}", use_container_width=True):
-                    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
+                if st.button(f"CLAIM ₱{comm:,.0f} FROM {ref_name}", key=f"claim_{ref_name}", use_container_width=True):
+                    data.setdefault('pending_actions', []).append({
+                        "type": "REF_CLAIM", 
+                        "amount": comm, 
+                        "request_id": f"REF_{ref_name}"
+                    })
                     data.setdefault('claimed_refs', []).append(ref_name)
                     save(st.session_state.user, data)
+                    st.success(f"Claim for {ref_name} sent to Admin!")
+                    time.sleep(1)
                     st.rerun()
             elif ref_name in claimed_list:
-                col4.markdown("<p style='font-size:10px; color:#00ff88; margin:0;'>Sent</p>", unsafe_allow_html=True)
+                st.button(f"PENDING APPROVAL ({ref_name})", disabled=True, use_container_width=True)
             else:
-                col4.markdown("<p style='font-size:10px; color:gray; margin:0;'>None</p>", unsafe_allow_html=True)
-        
-        st.markdown("<hr style='margin:4px 0; border-color:#222;'>", unsafe_allow_html=True)
-    
-    if not has_refs:
-        st.markdown("<p style='text-align:center; color:gray; font-size:12px; margin:10px;'>No referrals yet.</p>", unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+                st.button(f"WAITING FOR {ref_name} DEPOSIT", disabled=True, use_container_width=True)
+            
     
 
     st.subheader("🚀 RUNNING CAPITALS")
