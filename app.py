@@ -23,15 +23,21 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
 .balance-box h1 { font-size: 1.9rem; margin: 0; color: #00ff88; }
 
-/* MAKING BUTTONS HIGHLY VISIBLE */
-div.stButton > button {
+/* HIGH VISIBILITY ACTION BUTTONS */
+div.stButton > button:not(.nested-btn) {
+    width: 100% !important;
     background-color: #1c2128 !important;
-    border: 2px solid #00ff88 !important; /* Brighter Border */
+    border: 2px solid #00ff88 !important;
     color: #00ff88 !important;
     font-weight: bold !important;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2) !important;
-    border-radius: 8px !important;
-    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3) !important;
+    border-radius: 10px !important;
+    padding: 12px 0 !important;
+    transition: 0.3s;
+}
+div.stButton > button:hover {
+    background-color: #00ff88 !important;
+    color: #0e1117 !important;
 }
 
 /* 2x SMALLER NESTED BUTTONS FOR CAPITALS */
@@ -43,7 +49,7 @@ div.stButton > button {
     color: white;
     border-radius: 6px;
     padding: 4px 0;
-    font-size: 12px !important;
+    font-size: 10px !important;
     text-align: center;
     text-decoration: none;
     margin-top: 6px;
@@ -61,6 +67,8 @@ div.stButton > button:first-child[kind="secondary"] {
     box-shadow: none !important;
     padding: 0 !important;
     font-size: 12px !important;
+    width: auto !important;
+    height: auto !important;
     display: block;
     margin: 20px auto 0 auto !important;
 }
@@ -138,7 +146,6 @@ if st.session_state.user:
         st.query_params.clear()
         st.rerun()
 
-    # START BALANCE BOX
     st.markdown(f"<div class='balance-box'><h3>AVAILABLE BALANCE</h3><h1>₱{max(0.0, wallet):,.2f}</h1></div>", unsafe_allow_html=True)
     
     c1, c2, c3 = st.columns(3)
@@ -164,48 +171,97 @@ if st.session_state.user:
                 st.session_state.action_type=None
                 st.rerun()
 
-    # [History/Withdraw/Reinvest forms preserved exactly as in your original]
+    if st.session_state.action_type == "WITHDRAW BALANCE":
+        with st.form("w"):
+            amt_w = st.number_input("Amount", min_value=1000.0, value=1000.0)
+            bank = st.text_input("Bank name, Account name, Account#")
+            if st.form_submit_button("SUBMIT"):
+                if wallet >= amt_w:
+                    new_w = max(0.0, wallet - amt_w)
+                    pends = data.get('pending_actions', [])
+                    pends.append({"type":"WITHDRAW", "amount":amt_w, "request_id":req_id, "details":bank})
+                    hist = data.get('history', [])
+                    hist.append({"type":"WITHDRAW", "amount":amt_w, "status":"PENDING", "request_id":req_id, "date":ph_now.strftime("%Y-%m-%d")})
+                    atomic_update(st.session_state.user, {"wallet": new_w, "pending_actions": pends, "history": hist})
+                    st.success("Submitted!")
+                    time.sleep(1); st.session_state.action_type = None; st.rerun()
+                else:
+                    st.error(f"Insufficient Balance! (₱{wallet:,.2f})")
 
-    st.subheader("👥 My Referrals")
-    # THE RECTIFIED REFERRAL TABLE
+    if st.session_state.action_type == "REINVEST":
+        with st.form("r"):
+            amt_r = st.number_input("Reinvest Amount", 0.0, max_value=max(0.0, wallet))
+            if st.form_submit_button("CONFIRM"):
+                if wallet >= amt_r and amt_r > 0:
+                    new_w = max(0.0, wallet - amt_r)
+                    pends = data.get('pending_actions', [])
+                    pends.append({"type":"REINVEST", "amount":amt_r, "request_id":req_id})
+                    hist = data.get('history', [])
+                    hist.append({"type":"REINVEST", "amount":amt_r, "status":"PENDING", "request_id":req_id, "date":ph_now.strftime("%Y-%m-%d")})
+                    atomic_update(st.session_state.user, {"wallet": new_w, "pending_actions": pends, "history": hist})
+                    st.session_state.action_type = None
+                    st.rerun()
+
+    # --- PRESERVING REFERRAL COPY LINK ---
+    st.markdown("<h4 style='margin-bottom:0px;'>🔗 My Referral Link</h4>", unsafe_allow_html=True)
+    base_url = "https://unfacedinternational-dev.github.io/ismex-philippines/"
+    u_ref = st.session_state.user.replace(' ', '%20')
+    reflink = base_url + "?ref=" + u_ref
+    st.text_input("Link", value=reflink, label_visibility="collapsed")
+    
+    copy_js = f"""
+<script>
+function copyRef() {{
+    const el = document.createElement('textarea');
+    el.value = '{reflink}';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el); alert('Referral Link Copied!');
+}}
+</script>
+<button onclick="copyRef()" style="width: 100%; background-color: #1c2128; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">📋 COPY REFERRAL LINK</button>
+"""
+    st.components.v1.html(copy_js, height=60)
+
+    # --- UPDATED REFERRAL TABLE ---
+    st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
     st.markdown("""
-    <div style='background:#1c2128; padding:10px; border-radius:10px; border:1px solid #30363d;'>
-    <table style='width:100%; font-size:12px; color:white; border-collapse: collapse;'>
-        <tr style='color:#8b949e; border-bottom:1px solid #30363d;'>
-            <th style='text-align:left; padding:8px;'>INVITEE</th>
-            <th style='text-align:left; padding:8px;'>1st DEPOSIT</th>
-            <th style='text-align:left; padding:8px;'>COMMISSION</th>
-            <th style='text-align:center; padding:8px;'>ACTION</th>
-        </tr>
+    <div style='background: #1c2128; padding: 10px; border-radius: 10px; border: 1px solid #30363d;'>
+        <div style='display: flex; font-size: 10px; color: #8b949e; border-bottom: 1px solid #30363d; padding-bottom: 5px;'>
+            <div style='flex: 2;'>INVITEE</div>
+            <div style='flex: 1.5;'>1st DEPOSIT</div>
+            <div style='flex: 1.5;'>COMMISSION</div>
+            <div style='flex: 1.5;'>ACTION</div>
+        </div>
     """, unsafe_allow_html=True)
-
+                    
     reg_ref = load_reg()
     my_refs = [name for name, info in reg_ref.items() if info.get('ref_by') == st.session_state.user]
     claimed_list = data.get('claimed_refs', [])
 
-    if my_refs:
-        for ref_name in my_refs:
-            ref_data = reg_ref[ref_name]
-            ref_invest = ref_data.get('inv', [])
-            f_dep = ref_invest[0]['amount'] if ref_invest else 0
-            comm = f_dep * 0.20
-            
-            col1, col2, col3, col4 = st.columns([2, 1.5, 1.5, 1])
-            col1.write(ref_name)
-            col2.write(f"₱{f_dep:,.0f}")
-            col3.write(f"₱{comm:,.0f}")
-            
-            if f_dep > 0 and ref_name not in claimed_list:
-                if col4.button("CLAIM", key=f"r_{ref_name}"):
-                    data.setdefault('pending_actions', []).append({"type":"REFERRAL", "amount":comm, "request_id":f"REF_{ref_name}", "from":ref_name})
-                    claimed_list.append(ref_name)
-                    save(st.session_state.user, data)
-                    st.success("Requested!")
-                    st.rerun()
-            elif ref_name in claimed_list:
-                col4.write("Pending")
-            else:
-                col4.write("-")
+    for ref_name in my_refs:
+        ref_data = reg_ref[ref_name]
+        ref_invest = ref_data.get('inv', [])
+        f_dep = ref_invest[0]['amount'] if ref_invest else 0
+        comm = f_dep * 0.20
+        
+        col1, col2, col3, col4 = st.columns([2, 1.5, 1.5, 1.5])
+        col1.markdown(f"<p style='font-size:12px; margin:0;'>{ref_name}</p>", unsafe_allow_html=True)
+        col2.markdown(f"<p style='font-size:12px; margin:0;'>₱{f_dep:,.0f}</p>", unsafe_allow_html=True)
+        col3.markdown(f"<p style='font-size:12px; margin:0; color:#00ff88;'>₱{comm:,.0f}</p>", unsafe_allow_html=True)
+        
+        if f_dep > 0 and ref_name not in claimed_list:
+            if col4.button("REQUEST", key=f"r_{ref_name}"):
+                data.setdefault('pending_actions', []).append({"type":"COMMISSION", "amount":comm, "request_id":f"REF_{ref_name}"})
+                claimed_list.append(ref_name)
+                save(st.session_state.user, data)
+                st.success("Request Sent!")
+                st.rerun()
+        elif ref_name in claimed_list:
+            col4.markdown("<p style='font-size:10px; color:#e3b341; margin:0;'>Requested ✓</p>", unsafe_allow_html=True)
+        else:
+            col4.markdown("<p style='font-size:10px; color:gray; margin:0;'>No Dep.</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.subheader("🚀 RUNNING CAPITALS")
     for idx, item in enumerate(list(data.get('inv', []))):
@@ -213,25 +269,114 @@ if st.session_state.user:
         end_dt = start_dt + timedelta(days=7)
         pull_out_end = end_dt + timedelta(hours=1)
         
+        if ph_now > pull_out_end:
+            item['start_time'] = ph_now.isoformat()
+            save(st.session_state.user, data)
+            st.rerun()
+
         elapsed = (ph_now - start_dt).total_seconds()
         progress = min(1.0, elapsed / 604800)
         roi_total = item['amount'] * 0.20
         live_profit = progress * roi_total
-        
         is_op = end_dt <= ph_now <= pull_out_end
         dis_class = "" if is_op else "disabled"
 
         st.markdown(f"""
-<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border: 1px solid #30363d; border-left: 5px solid #00ff88;">
+<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
         <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
         <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
+    <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
+        ⚠️ <b>STRICT 1-HOUR WINDOW:</b><br>
+        Ready on: <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b><br>
+        <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
+    </div>
     <a href="/?act=claim&idx={idx}" target="_self" class="nested-btn {dis_class}">press here to CLAIM INTEREST</a>
     <a href="/?act=pull&idx={idx}" target="_self" class="nested-btn {dis_class}">press to PULL OUT CAPITAL</a>
 </div>
 """, unsafe_allow_html=True)
 
-    # [Remaining My History and Admin/Auth logic preserved exactly]
-    
+    st.subheader("📜 My History")
+    for h in reversed(data.get('history', [])):
+        st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
+
+# ==========================================
+# 4. NAVIGATION & AUTH / ADMIN
+# ==========================================
+elif st.session_state.page == "boss_key":
+    boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
+    if boss_pass:
+        master_key = st.secrets.get("BOSS_KEY", "0102030405")
+        if boss_pass == master_key:
+            st.session_state.is_boss = True; st.session_state.page = "admin"; st.rerun()
+
+elif st.session_state.page == "admin" and st.session_state.is_boss:
+    st.title("👑 ADMIN")
+    if st.button("EXIT"): st.session_state.page = "landing"; st.rerun()
+    reg = load_reg()
+    t1, t2 = st.tabs(["📥 APPROVALS", "👥 MEMBERS"])
+    with t1:
+        for u, u_data in reg.items():
+            pend = u_data.get('pending_actions', [])
+            for idx, act in enumerate(list(pend)):
+                with st.expander(f"{act['type']} - {u}"):
+                    if st.button("APPROVE", key=f"ap_{u}_{idx}"):
+                        user_ref = db.collection("investors").document(u)
+                        @firestore.transactional
+                        def proc(transaction, ref):
+                            snap = ref.get(transaction=transaction).to_dict()
+                            if act['type'] in ["DEPOSIT", "REINVEST"]:
+                                snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": (datetime.now() + timedelta(hours=8)).isoformat()})
+                            if act['type'] == "COMMISSION":
+                                snap['wallet'] = snap.get('wallet', 0) + act['amount']
+                            snap['pending_actions'].pop(idx)
+                            transaction.set(ref, snap)
+                        proc(db.transaction(), user_ref); st.rerun()
+    with t2:
+        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet')} for n, i in reg.items()])
+
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME").upper().strip()
+        p = st.text_input("PIN", type="password")
+        if st.button("GO"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: st.session_state.user = u; st.rerun()
+    with t2:
+        inv_n = st.session_state.get('captured_ref', 'OFFICIAL')
+        nu = st.text_input("Full Name").upper().strip()
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
+        if st.button("CREATE"):
+            save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "claimed_refs": []})
+            st.success("Done!"); time.sleep(1); st.rerun()
+
+else:
+    # --- FULL LANDING PAGE RESTORED ---
+    st.markdown("""
+<div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
+<h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
+<p style="text-align: center; color: #8b949e; font-size: 1rem; margin-bottom: 20px;">Stop letting your savings lose value. Movement is profit.</p>
+<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 10px;">
+<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
+<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
+</div>
+<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
+<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
+<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
+</div>
+<div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
+<span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
+<span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
+        st.session_state.page = "auth"; st.rerun()
+
+    if st.button(".", key="secret_boss"): 
+        st.session_state.page = "boss_key"; st.rerun()
+                    
