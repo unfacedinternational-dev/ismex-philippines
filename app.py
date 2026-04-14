@@ -388,9 +388,20 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                     if c2.button("REJECT", key=f"rj_{u}_{idx}"):
                         if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
                         u_data['pending_actions'].pop(idx)
-                        save(u, u_data)
-                        st.rerun()
-        elif st.session_state.page == "auth":
+                save(u, u_data)
+                st.rerun()
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME").upper().strip()
+        p = st.text_input("PIN", type="password")
+        if st.button("GO"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+            else:
+                st.error("Invalid Name or PIN")
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     with t1:
         u = st.text_input("NAME").upper().strip()
