@@ -129,14 +129,13 @@ if st.session_state.user:
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
 
-    # URL HANDLER FOR CAPITAL BUTTONS (SECURED)
+    # URL HANDLER FOR CAPITAL BUTTONS
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
         idx = int(qp["idx"])
         item = data['inv'][idx]
         roi_total = item['amount'] * 0.20
-        
         current_cycle_id = datetime.fromisoformat(item['start_time']).strftime("%Y%m%d%H")
         last_claim = item.get('last_claim_id', "")
 
@@ -248,9 +247,8 @@ async function copyRef() {{
 """
     st.components.v1.html(copy_js, height=60)
 
-                # COMPACT REFERRAL LIST (MOBILE OPTIMIZED)
+    # COMPACT REFERRAL LIST
     st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
-    
     reg_ref = load_reg()
     my_refs = [name for name, info in reg_ref.items() if info.get('ref_by') == st.session_state.user]
     claimed_list = data.get('claimed_refs', [])
@@ -258,16 +256,13 @@ async function copyRef() {{
     if not my_refs:
         st.info("No referrals yet.")
     else:
-        # Wrapper start
         st.markdown("<div style='background:#1c2128; border-radius:10px; border:1px solid #30363d; overflow:hidden;'>", unsafe_allow_html=True)
-        
         for ref_name in my_refs:
             ref_data = reg_ref[ref_name]
             ref_invest = ref_data.get('inv', [])
             f_dep = float(ref_invest[0]['amount']) if ref_invest else 0.0
             comm = f_dep * 0.20
             
-            # Ultra-compact row layout
             st.markdown(f"""
             <div style="padding: 10px; border-bottom: 1px solid #30363d; display: flex; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -281,26 +276,16 @@ async function copyRef() {{
             </div>
             """, unsafe_allow_html=True)
 
-            # Mini-Button only shows if there is something to claim
-            if st.button(f"CLAIM COMMISSION ({ref_name})"):
-    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
-    # ADD THIS LINE SO IT SHOWS AS PENDING IN HISTORY IMMEDIATELY:
-    data.setdefault('history', []).append({
-        "type": "REF_CLAIM", 
-        "amount": comm, 
-        "status": "PENDING", 
-        "date": ph_now.strftime("%Y-%m-%d")
-    })
-    data.setdefault('claimed_refs', []).append(ref_name)
-    save(st.session_state.user, data)
-    st.rerun()
-
+            if f_dep > 0 and ref_name not in claimed_list:
+                if st.button(f"CLAIM COMMISSION ({ref_name})", key=f"claim_{ref_name}"):
+                    # FIX: Adds to History + Pending Actions
+                    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
+                    data.setdefault('history', []).append({"type":"COMMISSION", "amount":comm, "status":"PENDING", "request_id":f"REF_{ref_name}", "date":ph_now.strftime("%Y-%m-%d")})
+                    data.setdefault('claimed_refs', []).append(ref_name)
+                    save(st.session_state.user, data)
+                    st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
         
-        st.markdown("</div>", unsafe_allow_html=True) # Wrapper end
-        
-            
-    
-
     st.subheader("🚀 RUNNING CAPITALS")
     for idx, item in enumerate(list(data.get('inv', []))):
         start_dt = datetime.fromisoformat(item['start_time'])
@@ -384,8 +369,14 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                                 snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": ph.isoformat()})
                             if act['type'] == "REF_CLAIM":
                                 snap['wallet'] = snap.get('wallet', 0) + act['amount']
+                                # FIX: Confirm the History entry
+                                for h in snap.get('history', []):
+                                    if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
+                            
+                            # General confirmed status for other actions
                             for h in snap.get('history', []):
                                 if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
+                                
                             snap['pending_actions'].pop(idx)
                             transaction.set(ref, snap)
                         tx = db.transaction()
@@ -425,9 +416,7 @@ elif st.session_state.page == "auth":
             if nu and len(np) == 6:
                 save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
                 st.success("Done!"); time.sleep(1); st.rerun()
-
 else:
-    # --- LANDING PAGE RESTORED ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -446,11 +435,9 @@ else:
 </div>
 </div>
 """, unsafe_allow_html=True)
-
     if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
