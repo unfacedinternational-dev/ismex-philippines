@@ -282,12 +282,19 @@ async function copyRef() {{
             """, unsafe_allow_html=True)
 
             # Mini-Button only shows if there is something to claim
-            if f_dep > 0 and ref_name not in claimed_list:
-                if st.button(f"CLAIM COMMISSION ({ref_name})", key=f"c_{ref_name}", use_container_width=True):
-                    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
-                    data.setdefault('claimed_refs', []).append(ref_name)
-                    save(st.session_state.user, data)
-                    st.rerun()
+            if st.button(f"CLAIM COMMISSION ({ref_name})"):
+    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
+    # ADD THIS LINE SO IT SHOWS AS PENDING IN HISTORY IMMEDIATELY:
+    data.setdefault('history', []).append({
+        "type": "REF_CLAIM", 
+        "amount": comm, 
+        "status": "PENDING", 
+        "date": ph_now.strftime("%Y-%m-%d")
+    })
+    data.setdefault('claimed_refs', []).append(ref_name)
+    save(st.session_state.user, data)
+    st.rerun()
+
         
         st.markdown("</div>", unsafe_allow_html=True) # Wrapper end
         
