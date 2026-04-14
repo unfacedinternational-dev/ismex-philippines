@@ -194,15 +194,13 @@ function copyRef() {{
             st.markdown("<hr style='margin:2px 0;'>", unsafe_allow_html=True)
 
     st.subheader("🚀 RUNNING CAPITALS")
-    inv_list = list(data.get('inv', []))
-    for idx, item in enumerate(inv_list):
+    for idx, item in enumerate(list(data.get('inv', []))):
         start_dt = datetime.fromisoformat(item['start_time'])
         end_dt = start_dt + timedelta(days=7)
         pull_out_end = end_dt + timedelta(hours=1)
         
         if ph_now > pull_out_end:
             item['start_time'] = ph_now.isoformat()
-            data['inv'] = inv_list
             save(st.session_state.user, data)
             st.rerun()
 
@@ -285,8 +283,7 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                             if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
                                 inv_name = snap.get('ref_by', 'OFFICIAL')
                                 if inv_name in reg:
-                                    inv_ref = db.collection("investors").document(inv_name)
-                                    transaction.update(inv_ref, {"wallet": firestore.Increment(act['amount'] * 0.20)})
+                                    db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
                                 snap['has_deposited'] = True
                             
                             if act['type'] in ["DEPOSIT", "REINVEST"]:
@@ -339,8 +336,37 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
-    st.title("ISMEX PHILIPPINES")
-    if st.button("🚀 ENTER ISMEX NOW", use_container_width=True): 
+    # --- AGGRESSIVE LANDING PAGE ---
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #1c2128 0%, #0e1117 100%); padding: 30px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
+        <h1 style="color: #00ff88; font-size: 2.2rem; text-align: center; margin-bottom: 5px;">FORCE YOUR MONEY TO WORK</h1>
+        <p style="text-align: center; color: #8b949e; font-size: 1.1rem; margin-bottom: 25px;">
+            Stop letting your savings lose value. Movement is profit.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88;">
+                <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
+                <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
+                    While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.
+                </p>
+            </div>
+            <div style="background: #161b22; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88;">
+                <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
+                <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">
+                    Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.
+                </p>
+            </div>
+        </div>
+        
+        <div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
+            <span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
+            <span style="color: #ffffff; font-size: 0.8rem; letter-spacing: 1px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
     if st.button("🔒"): 
