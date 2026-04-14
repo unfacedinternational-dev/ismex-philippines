@@ -30,8 +30,24 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .main .block-container { padding: 1rem !important; }
 
+/* RESTORING BOXES TO BUTTONS */
+div.stButton > button {
+    border: 1px solid #30363d !important;
+    background-color: #1c2128 !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+}
+
+/* SMALLER BOXES FOR CLAIM/PULL OUT */
+div[data-testid="stVerticalBlock"] div.stButton > button {
+    font-size: 12px !important;
+    padding: 5px 10px !important;
+}
+
 /* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
-div.stButton > button:first-child[kind="secondary"] {
+div.stButton > button:first-child[kind="secondary"], 
+button[key="secret_boss"] {
     background-color: transparent !important;
     color: white !important;
     border: none !important;
@@ -366,3 +382,4 @@ else:
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
+            
