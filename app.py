@@ -45,7 +45,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 [data-testid="column"] div.stButton > button {
     width: 100% !important;
     background-color: #1c2128 !important;
-    border: 2px solid #00ff88 !important; 
+    border: 2px solid #00ff88 !important; /* GLOWING GREEN BORDER */
     color: #00ff88 !important;
     font-weight: bold !important;
     box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
@@ -91,19 +91,16 @@ def get_db():
 db = get_db()
 
 def get_user_data(username):
-    if not db: return None
     doc = db.collection("investors").document(username).get()
     return doc.to_dict() if doc.exists else None
 
 def load_reg(): 
-    if not db: return {}
     return {doc.id: doc.to_dict() for doc in db.collection("investors").stream()}
 
 def save(n, d): 
-    if db: db.collection("investors").document(n).set(d)
+    db.collection("investors").document(n).set(d)
 
 def atomic_update(username, update_dict):
-    if not db: return
     user_ref = db.collection("investors").document(username)
     @firestore.transactional
     def _do(transaction, ref):
@@ -251,17 +248,21 @@ async function copyRef() {{
 """
     st.components.v1.html(copy_js, height=60)
 
+    # RECTIFIED REFERRAL TABLE (OPTIMIZED)
     st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
     st.markdown("<div style='background:#1c2128; padding:10px; border-radius:10px; border:1px solid #30363d;'>", unsafe_allow_html=True)
     h1, h2, h3, h4 = st.columns([2, 1.5, 1.5, 1.5])
     h1.caption("INVESTOR"); h2.caption("1st DEPOSIT"); h3.caption("COMMISSION"); h4.caption("ACTION")
                     
-    reg_ref = load_reg()
-    my_refs = [name for name, info in reg_ref.items() if info.get('ref_by') == st.session_state.user]
+    # Optimized: Query only users referred by the current user
+    my_refs_query = db.collection("investors").where("ref_by", "==", st.session_state.user).stream()
     claimed_list = data.get('claimed_refs', [])
+    has_refs = False
 
-    for ref_name in my_refs:
-        ref_data = reg_ref[ref_name]
+    for ref_doc in my_refs_query:
+        has_refs = True
+        ref_name = ref_doc.id
+        ref_data = ref_doc.to_dict()
         ref_invest = ref_data.get('inv', [])
         f_dep = ref_invest[0]['amount'] if ref_invest else 0
         comm = f_dep * 0.20
@@ -283,6 +284,10 @@ async function copyRef() {{
             else:
                 col4.markdown("<p style='font-size:10px; color:gray; margin:0; text-align:center;'>No Dep.</p>", unsafe_allow_html=True)
         st.markdown("<hr style='margin:2px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+    
+    if not has_refs:
+        st.markdown("<p style='text-align:center; color:gray; font-size:12px; margin-top:10px;'>No referrals found.</p>", unsafe_allow_html=True)
+    
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.subheader("🚀 RUNNING CAPITALS")
@@ -411,6 +416,7 @@ elif st.session_state.page == "auth":
                 st.success("Done!"); time.sleep(1); st.rerun()
 
 else:
+    # --- LANDING PAGE RESTORED ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
