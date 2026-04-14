@@ -327,6 +327,7 @@ async function copyRef() {{
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
+elif 
 # ==========================================
 # 4. NAVIGATION & AUTH
 # ==========================================
@@ -410,6 +411,92 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
         # PIN inputs for confirmation
         np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
         np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6)
+# ==========================================
+# 4. NAVIGATION & AUTH
+# ==========================================
+elif st.session_state.page == "boss_key":
+    boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
+    if boss_pass:
+        master_key = st.secrets.get("BOSS_KEY", "0102030405")
+        if boss_pass == master_key:
+            st.session_state.is_boss = True
+            st.session_state.page = "admin"
+            st.rerun()
+
+elif st.session_state.page == "admin" and st.session_state.is_boss:
+    st.title("👑 ADMIN")
+    if st.button("EXIT"): 
+        st.session_state.is_boss = False
+        st.session_state.page = "landing"
+        st.rerun()
+    reg = load_reg()
+    t1, t2, t3 = st.tabs(["📥 APPROVALS", "👥 MEMBERS", "📜 HISTORY"])
+    with t1:
+        for u, u_data in reg.items():
+            pend = u_data.get('pending_actions', [])
+            for idx, act in enumerate(list(pend)):
+                with st.expander(f"{act['type']} - {u} (₱{act.get('amount',0):,.2f})"):
+                    c1, c2 = st.columns(2)
+                    if c1.button("APPROVE", key=f"ap_{u}_{idx}"):
+                        ph = datetime.now() + timedelta(hours=8)
+                        user_ref = db.collection("investors").document(u)
+                        @firestore.transactional
+                        def process_approval(transaction, ref):
+                            snap_doc = ref.get(transaction=transaction)
+                            snap = snap_doc.to_dict()
+                            if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
+                                inv_name = snap.get('ref_by', 'OFFICIAL')
+                                if inv_name in reg:
+                                    db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
+                                snap['has_deposited'] = True
+                            if act['type'] in ["DEPOSIT", "REINVEST"]:
+                                snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": ph.isoformat()})
+                            if act['type'] == "REF_CLAIM":
+                                snap['wallet'] = snap.get('wallet', 0) + act['amount']
+                            
+                            # Update History Status to Confirmed
+                            for h in snap.get('history', []):
+                                if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
+                            
+                            snap['pending_actions'].pop(idx)
+                            transaction.set(ref, snap)
+                        tx = db.transaction()
+                        process_approval(tx, user_ref)
+                        st.rerun()
+                    if c2.button("REJECT", key=f"rj_{u}_{idx}"):
+                        if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
+                        u_data['pending_actions'].pop(idx)
+                        save(u, u_data)
+                        st.rerun()
+    with t2:
+        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet'), "REF": i.get('ref_by')} for n, i in reg.items()])
+    with t3:
+        for u_n, u_i in reg.items():
+            u_h = u_i.get('history', [])
+            if u_h:
+                st.markdown(f"**Investor: {u_n}**")
+                for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
+                st.markdown("---")
+
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME").upper().strip()
+        p = st.text_input("PIN", type="password")
+        if st.button("GO"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+            else:
+                st.error("Invalid Name or PIN")
+
+    with t2:
+        inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
+        inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
+        nu = st.text_input("Full Name (First, Middle, Last Name)").upper().strip()
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6)
         
         if st.button("CREATE"):
             if not nu:
@@ -419,24 +506,12 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
             elif np != np_confirm:
                 st.error("PINs do not match. Please try again.")
             else:
-                # If all checks pass, save to database
-                save(nu, {
-                    "pin": np, 
-                    "wallet": 0.0, 
-                    "ref_by": inv_n, 
-                    "inv": [], 
-                    "history": [], 
-                    "pending_actions": [], 
-                    "has_deposited": False, 
-                    "claimed_refs": []
-                })
-                # Success message with instruction to Login
+                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
 
 else:
-    # --- LANDING PAGE (RESTORING BASE DESIGN) ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -455,12 +530,10 @@ else:
 </div>
 </div>
 """, unsafe_allow_html=True)
-
     if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
-
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-    
+                              
