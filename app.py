@@ -245,16 +245,15 @@ function copyRef() {{
 # 4. NAVIGATION & AUTH
 # ==========================================
 elif st.session_state.page == "boss_key":
-    boss_pass = st.text_input("Key", type="password", placeholder="Enter Key")
-    if st.button("💃", use_container_width=True):
+    # Clean, minimal login. No buttons, no extra boxes.
+    boss_pass = st.text_input("Key", type="password", placeholder="...")
+    if boss_pass:
         master_key = st.secrets.get("BOSS_KEY", "0102030405")
         if boss_pass == master_key:
             st.session_state.is_boss = True
             st.session_state.page = "admin"
             st.rerun()
-        else:
-            st.session_state.page = "landing"
-            st.rerun()
+            
 
 elif st.session_state.page == "admin" and st.session_state.is_boss:
     st.title("👑 ADMIN")
