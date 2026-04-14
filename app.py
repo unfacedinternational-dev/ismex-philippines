@@ -30,20 +30,6 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .main .block-container { padding: 1rem !important; }
 
-/* DUMMY MOVING GRAPH CSS */
-.chart-container {
-    width: 100%; height: 60px; background: #1c2128; 
-    border-radius: 10px; overflow: hidden; position: relative;
-    margin-bottom: 15px; border: 1px solid #30363d;
-}
-.moving-line {
-    position: absolute; width: 200%; height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(0,255,136,0.2) 50%, transparent 100%);
-    animation: move 3s linear infinite;
-}
-@keyframes move { from { left: -100%; } to { left: 0%; } }
-.wave-svg { position: absolute; bottom: 0; width: 100%; height: 40px; stroke: #00ff88; fill: none; stroke-width: 2; }
-
 /* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
 div.stButton > button:first-child[kind="secondary"] {
     background-color: transparent !important;
@@ -266,7 +252,7 @@ function copyRef() {{
             save(st.session_state.user, data)
             st.rerun()
 
-    st.markdown("<h4 style='margin-top:10px;'>📜 My History</h4>", unsafe_allow_html=True)
+    st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
@@ -333,17 +319,6 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 st.markdown("---")
 
 elif st.session_state.page == "auth":
-    # --- DUMMY MOVING GRAPH ---
-    st.markdown("""
-    <div class="chart-container">
-        <div style="position: absolute; top: 5px; left: 10px; color: #00ff88; font-size: 0.6rem; font-weight: bold;">LIVE MARKET ENGINE</div>
-        <div class="moving-line"></div>
-        <svg class="wave-svg" viewBox="0 0 500 40" preserveAspectRatio="none">
-            <path d="M0,20 Q50,5 100,25 T200,15 T300,30 T400,10 T500,20" />
-        </svg>
-    </div>
-    """, unsafe_allow_html=True)
-
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     with t1:
         u = st.text_input("NAME").upper().strip()
@@ -391,4 +366,3 @@ else:
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-    
