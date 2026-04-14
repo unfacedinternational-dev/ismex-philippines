@@ -7,7 +7,7 @@ import time
 # ==========================================
 # 1. UI CONFIGURATION (FULL CUSTOM CSS) - PRESERVED
 # ==========================================
-st.set_page_config(page_title="ISMEX Official", layout="wide")
+st.set_page_config(page_title="ISMEX PHILIPPINES", layout="wide")
 
 st.markdown("""
 <style>
