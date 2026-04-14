@@ -30,22 +30,32 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .main .block-container { padding: 1rem !important; }
 
-/* RESTORED BUTTON BOXES */
+/* 2x SMALLER NESTED BUTTONS */
+.nested-btn {
+    display: block;
+    width: 100%;
+    background-color: #1c2128;
+    border: 1px solid #30363d;
+    color: white;
+    border-radius: 6px;
+    padding: 4px 0;
+    font-size: 9px !important; /* Half size */
+    text-align: center;
+    text-decoration: none;
+    margin-top: 6px;
+    cursor: pointer;
+}
+.nested-btn:hover { border-color: #00ff88; color: #00ff88; }
+.nested-btn.disabled { color: #444; border-color: #222; cursor: not-allowed; pointer-events: none; }
+
+/* REGULAR BUTTON BOXES */
 div.stButton > button {
     background-color: #1c2128 !important;
     border: 1px solid #30363d !important;
     border-radius: 8px !important;
 }
 
-/* 2x SMALLER BUTTONS ONLY FOR RUNNING CAPITALS */
-div[data-testid="column"] div.stButton > button {
-    font-size: 10px !important;
-    padding: 4px 8px !important;
-    min-height: 0px !important;
-    line-height: 1.2 !important;
-}
-
-/* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
+/* SECRET ADMIN ENTRY */
 div.stButton > button:first-child[kind="secondary"] {
     background-color: transparent !important;
     color: white !important;
@@ -114,6 +124,24 @@ if st.session_state.user:
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
+
+    # PRESERVING YOUR EXACT LOGIC FOR CLAIM/PULL
+    qp = st.query_params
+    if "act" in qp:
+        act_type = qp["act"]
+        idx = int(qp["idx"])
+        item = data['inv'][idx]
+        roi_total = item['amount'] * 0.20
+        if act_type == "claim":
+            data['wallet'] += roi_total
+            item['start_time'] = ph_now.isoformat()
+            save(st.session_state.user, data)
+        elif act_type == "pull":
+            data['wallet'] += (item['amount'] + roi_total)
+            data['inv'].pop(idx)
+            save(st.session_state.user, data)
+        st.query_params.clear()
+        st.rerun()
 
     st.markdown(f"<div class='balance-box'><h3>AVAILABLE BALANCE</h3><h1>₱{max(0.0, wallet):,.2f}</h1></div>", unsafe_allow_html=True)
     
@@ -237,9 +265,12 @@ function copyRef() {{
         progress = min(1.0, elapsed / 604800)
         roi_total = item['amount'] * 0.20
         live_profit = progress * roi_total
+        
+        is_op = end_dt <= ph_now <= pull_out_end
+        dis_class = "" if is_op else "disabled"
 
         st.markdown(f"""
-<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px;">
+<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border-right: 1px solid #30363d; border-top: 1px solid #30363d; border-bottom: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
         <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
         <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
@@ -251,21 +282,10 @@ function copyRef() {{
         <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b> until <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
         <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
     </div>
+    <a href="/?act=claim&idx={idx}" target="_self" class="nested-btn {dis_class}">press here to CLAIM INTEREST on schedule</a>
+    <a href="/?act=pull&idx={idx}" target="_self" class="nested-btn {dis_class}">press to PULL OUT CAPITAL on schedule</a>
 </div>
 """, unsafe_allow_html=True)
-        
-        is_op = end_dt <= ph_now <= pull_out_end
-        ca, cb = st.columns(2)
-        if ca.button("press here to CLAIM INTEREST on schedule", key=f"int_{idx}", disabled=not is_op, use_container_width=True):
-            data['wallet'] += roi_total
-            item['start_time'] = ph_now.isoformat()
-            save(st.session_state.user, data)
-            st.rerun()
-        if cb.button("press to PULL OUT CAPITAL on schedule", key=f"pull_{idx}", disabled=not is_op, use_container_width=True):
-            data['wallet'] += (item['amount'] + roi_total)
-            data['inv'].pop(idx)
-            save(st.session_state.user, data)
-            st.rerun()
 
     st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
@@ -381,4 +401,3 @@ else:
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-    
