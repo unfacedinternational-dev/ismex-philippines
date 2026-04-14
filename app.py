@@ -387,35 +387,41 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
                         st.rerun()
-    with t2:
-        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet'), "REF": i.get('ref_by')} for n, i in reg.items()])
-    with t3:
-        for u_n, u_i in reg.items():
-            u_h = u_i.get('history', [])
-            if u_h:
-                st.markdown(f"**Investor: {u_n}**")
-                for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
-                st.markdown("---")
-
-elif st.session_state.page == "auth":
-    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
-    with t1:
-        u = st.text_input("NAME").upper().strip()
-        p = st.text_input("PIN", type="password")
-        if st.button("GO"):
-            r_data = get_user_data(u)
-            if r_data and str(r_data.get('pin')) == p: 
-                st.session_state.user = u
-                st.rerun()
-    with t2:
+        with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
         inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
-        nu = st.text_input("Full Name").upper().strip()
+        
+        # Updated Name Input with specific instruction
+        nu = st.text_input("Full Name (First, Middle, Last Name)").upper().strip()
+        
+        # PIN inputs for confirmation
         np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6)
+        
         if st.button("CREATE"):
-            if nu and len(np) == 6:
-                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
-                st.success("Done!"); time.sleep(1); st.rerun()
+            if not nu:
+                st.error("Please input your First, Middle, and Last name.")
+            elif len(np) != 6:
+                st.error("PIN must be exactly 6 digits.")
+            elif np != np_confirm:
+                st.error("PINs do not match. Please try again.")
+            else:
+                # If all checks pass, save to database
+                save(nu, {
+                    "pin": np, 
+                    "wallet": 0.0, 
+                    "ref_by": inv_n, 
+                    "inv": [], 
+                    "history": [], 
+                    "pending_actions": [], 
+                    "has_deposited": False, 
+                    "claimed_refs": []
+                })
+                # Success message with instruction to Login
+                st.success("Registration Successful! Please proceed to LOGIN now.")
+                time.sleep(2)
+                st.rerun()
+        
 else:
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
