@@ -248,60 +248,49 @@ async function copyRef() {{
 """
     st.components.v1.html(copy_js, height=60)
 
-            # VERTICAL SMART CARDS FOR REFERRALS
+                # COMPACT REFERRAL LIST (MOBILE OPTIMIZED)
     st.markdown("<h4 style='margin-bottom:5px;'>👥 My Referrals</h4>", unsafe_allow_html=True)
     
-    # We pull all data once to ensure we don't miss any invites
     reg_ref = load_reg()
     my_refs = [name for name, info in reg_ref.items() if info.get('ref_by') == st.session_state.user]
     claimed_list = data.get('claimed_refs', [])
 
     if not my_refs:
-        st.info("No referrals yet. Share your link to start earning!")
+        st.info("No referrals yet.")
     else:
+        # Wrapper start
+        st.markdown("<div style='background:#1c2128; border-radius:10px; border:1px solid #30363d; overflow:hidden;'>", unsafe_allow_html=True)
+        
         for ref_name in my_refs:
             ref_data = reg_ref[ref_name]
             ref_invest = ref_data.get('inv', [])
-            
-            # Get first deposit amount
             f_dep = float(ref_invest[0]['amount']) if ref_invest else 0.0
             comm = f_dep * 0.20
             
-            # Create a clean vertical card for each invite
+            # Ultra-compact row layout
             st.markdown(f"""
-            <div style="background: #1c2128; padding: 12px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 10px;">
+            <div style="padding: 10px; border-bottom: 1px solid #30363d; display: flex; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #8b949e; font-size: 12px; font-weight: bold;">INVESTOR</span>
-                    <span style="color: white; font-size: 14px;">{ref_name}</span>
+                    <span style="font-size: 13px; font-weight: bold; color: white;">{ref_name}</span>
+                    <span style="font-size: 12px; color: #00ff88; font-weight: bold;">+₱{comm:,.0f}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <span style="color: #8b949e; font-size: 12px;">1st DEPOSIT</span>
-                    <span style="color: white; font-size: 13px;">₱{f_dep:,.0f}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <span style="color: #8b949e; font-size: 12px;">COMMISSION</span>
-                    <span style="color: #00ff88; font-size: 14px; font-weight: bold;">₱{comm:,.0f}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 11px; color: #8b949e;">1st Dep: ₱{f_dep:,.0f}</span>
+                    <span style="font-size: 10px; font-style: italic; color: #8b949e;">{"Sent to Admin" if ref_name in claimed_list else "Waiting Deposit" if f_dep == 0 else "Ready"}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-            # Action Button below the data card
+            # Mini-Button only shows if there is something to claim
             if f_dep > 0 and ref_name not in claimed_list:
-                if st.button(f"CLAIM ₱{comm:,.0f} FROM {ref_name}", key=f"claim_{ref_name}", use_container_width=True):
-                    data.setdefault('pending_actions', []).append({
-                        "type": "REF_CLAIM", 
-                        "amount": comm, 
-                        "request_id": f"REF_{ref_name}"
-                    })
+                if st.button(f"CLAIM COMMISSION ({ref_name})", key=f"c_{ref_name}", use_container_width=True):
+                    data.setdefault('pending_actions', []).append({"type":"REF_CLAIM", "amount":comm, "request_id":f"REF_{ref_name}"})
                     data.setdefault('claimed_refs', []).append(ref_name)
                     save(st.session_state.user, data)
-                    st.success(f"Claim for {ref_name} sent to Admin!")
-                    time.sleep(1)
                     st.rerun()
-            elif ref_name in claimed_list:
-                st.button(f"PENDING APPROVAL ({ref_name})", disabled=True, use_container_width=True)
-            else:
-                st.button(f"WAITING FOR {ref_name} DEPOSIT", disabled=True, use_container_width=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True) # Wrapper end
+        
             
     
 
