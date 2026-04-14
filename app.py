@@ -30,6 +30,21 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 }
 .main .block-container { padding: 1rem !important; }
 
+/* RESTORED BUTTON BOXES */
+div.stButton > button {
+    background-color: #1c2128 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 8px !important;
+}
+
+/* 2x SMALLER BUTTONS ONLY FOR RUNNING CAPITALS */
+div[data-testid="column"] div.stButton > button {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+    min-height: 0px !important;
+    line-height: 1.2 !important;
+}
+
 /* SECRET ADMIN ENTRY - LOOKS LIKE PLAIN TEXT */
 div.stButton > button:first-child[kind="secondary"] {
     background-color: transparent !important;
@@ -252,7 +267,7 @@ function copyRef() {{
             save(st.session_state.user, data)
             st.rerun()
 
-    st.markdown("<h4 style='margin-top:10px;'>📜 My History</h4>", unsafe_allow_html=True)
+    st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
@@ -359,13 +374,11 @@ else:
 </div>
 """, unsafe_allow_html=True)
 
-    # RESTORED MAIN BUTTON
     if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
 
-    # DISCREET SECRET ENTRY (Plain . below the button)
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-                
+    
