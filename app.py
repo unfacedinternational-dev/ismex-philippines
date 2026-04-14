@@ -128,6 +128,37 @@ if st.session_state.user:
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
+    # ==========================================
+    # 2. RESTORED BALANCE BOX (TOP OF DASHBOARD)
+    # ==========================================
+    st.markdown(f"""
+        <div class="balance-box">
+            <h3>AVAILABLE BALANCE</h3>
+            <h1>₱{wallet:,.2f}</h1>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ==========================================
+    # 3. ACTION CENTER GRID (KEEP THIS BELOW BALANCE)
+    # ==========================================
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("📥 DEPOSIT", use_container_width=True):
+            st.session_state.action_type = "DEPOSIT CAPITAL"
+            st.rerun()
+        if st.button("🔄 REINVEST", use_container_width=True):
+            st.session_state.action_type = "REINVEST"
+            st.rerun()
+
+    with col_b:
+        if st.button("📤 WITHDRAW", use_container_width=True):
+            st.session_state.action_type = "WITHDRAW BALANCE"
+            st.rerun()
+        if st.button("🚪 LOGOUT", use_container_width=True):
+            st.session_state.user = None
+            st.rerun()
 
     # URL HANDLER FOR CAPITAL BUTTONS (SECURED)
     qp = st.query_params
