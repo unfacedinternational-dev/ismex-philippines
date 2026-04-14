@@ -360,12 +360,12 @@ else:
 """, unsafe_allow_html=True)
 
     # RESTORED MAIN BUTTON
-    if st.button("🚀 JOIN THE COMMUNITY NOW", use_container_width=True): 
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
         st.session_state.page = "auth"
         st.rerun()
 
-    # DISCREET SECRET ENTRY (Plain ⛔ below the button)
-    if st.button("⛔", key="secret_boss"): 
+    # DISCREET SECRET ENTRY (Plain . below the button)
+    if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
                 
