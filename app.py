@@ -32,7 +32,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
     color: white;
     border-radius: 6px;
     padding: 4px 0;
-    font-size: 9px !important;
+    font-size: 12px !important;
     text-align: center;
     text-decoration: none;
     margin-top: 6px;
