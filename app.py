@@ -7,7 +7,7 @@ import time
 # ==========================================
 # 1. UI CONFIGURATION (FULL CUSTOM CSS) - PRESERVED
 # ==========================================
-st.set_page_config(page_title="ISMEX PHILIPPINES", layout="wide")
+st.set_page_config(page_title="ISMEX Official", layout="wide")
 
 st.markdown("""
 <style>
@@ -138,7 +138,7 @@ if st.session_state.user:
                     st.session_state.action_type = None
                     st.rerun()
 
-    # --- REFERRAL SECTION (PRESERVED) ---
+    # --- REFERRAL SECTION ---
     st.markdown("<h4 style='margin-bottom:0px;'>🔗 My Referral Link</h4>", unsafe_allow_html=True)
     base_url = "https://unfacedinternational-dev.github.io/ismex-philippines/"
     u_ref = st.session_state.user.replace(' ', '%20')
@@ -194,13 +194,15 @@ function copyRef() {{
             st.markdown("<hr style='margin:2px 0;'>", unsafe_allow_html=True)
 
     st.subheader("🚀 RUNNING CAPITALS")
-    for idx, item in enumerate(list(data.get('inv', []))):
+    inv_list = list(data.get('inv', []))
+    for idx, item in enumerate(inv_list):
         start_dt = datetime.fromisoformat(item['start_time'])
         end_dt = start_dt + timedelta(days=7)
         pull_out_end = end_dt + timedelta(hours=1)
         
         if ph_now > pull_out_end:
             item['start_time'] = ph_now.isoformat()
+            data['inv'] = inv_list
             save(st.session_state.user, data)
             st.rerun()
 
@@ -243,7 +245,7 @@ function copyRef() {{
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
 
 # ==========================================
-# 4. NAVIGATION & AUTH (PRESERVED)
+# 4. NAVIGATION & AUTH
 # ==========================================
 elif st.session_state.page == "boss_key":
     boss_pass = st.text_input("Key", type="password", placeholder="Enter Key")
@@ -283,7 +285,8 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                             if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
                                 inv_name = snap.get('ref_by', 'OFFICIAL')
                                 if inv_name in reg:
-                                    db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
+                                    inv_ref = db.collection("investors").document(inv_name)
+                                    transaction.update(inv_ref, {"wallet": firestore.Increment(act['amount'] * 0.20)})
                                 snap['has_deposited'] = True
                             
                             if act['type'] in ["DEPOSIT", "REINVEST"]:
@@ -343,4 +346,4 @@ else:
     if st.button("🔒"): 
         st.session_state.page = "boss_key"
         st.rerun()
-                    
+            
