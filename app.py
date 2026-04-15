@@ -492,13 +492,95 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 st.markdown("---")
 
 elif st.session_state.page == "auth":
-    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    t1, t2        st.markdown(f"""
+<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border-right: 1px solid #30363d; border-top: 1px solid #30363d; border-bottom: 1px solid #30363d;">
+    <div style="display: flex; justify-content: space-between;">
+        <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
+        <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
+    </div>
+    <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
+    <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
+        ⚠️ <b>STRICT 1-HOUR WINDOW:</b><br>
+        Capital & Interest ready to pull out on:<br>
+        <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b> until <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
+        <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
+    </div>
+    <a href="/?act=claim&idx={idx}" target="_self" class="nested-btn {dis_class}">press here to CLAIM INTEREST on schedule</a>
+    <a href="/?act=pull&idx={idx}" target="_self" class="nested-btn {dis_class}">press to PULL OUT CAPITAL on schedule</a>
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# ADMIN COMMAND CENTER LOGIC
+# ==========================================
+elif st.session_state.page == "admin":
+    st.title("Admin Command Center")
+    t1, t2, t3 = st.tabs(["PENDING", "INVESTORS", "HISTORY"])
     
     with t1:
-        # Added unique key for login
-        u = st.text_input("NAME", key="l_name").upper().strip()
-        p = st.text_input("PIN", type="password", key="l_pin")
-        if st.button("GO", key="l_btn"):
+        reg = get_all_investors()
+        for u, u_data in reg.items():
+            pend = u_data.get('pending_actions', [])
+            for idx, act in enumerate(list(pend)):
+                with st.expander(f"{act['type']} - {u} (₱{act.get('amount',0):,.2f})"):
+                    c1, c2 = st.columns(2)
+                    if c1.button("APPROVE", key=f"ap_{u}_{idx}"):
+                        ph = datetime.now() + timedelta(hours=8)
+                        user_ref = db.collection("investors").document(u)
+                        @firestore.transactional
+                        def process_approval(transaction, ref):
+                            snap_doc = ref.get(transaction=transaction)
+                            snap = snap_doc.to_dict()
+                            if act['type'] == "DEPOSIT" and not snap.get('has_deposited'):
+                                inv_name = snap.get('ref_by', 'OFFICIAL')
+                                if inv_name in reg:
+                                    db.collection("investors").document(inv_name).update({"wallet": firestore.Increment(act['amount'] * 0.20)})
+                                snap['has_deposited'] = True
+                            if act['type'] in ["DEPOSIT", "REINVEST"]:
+                                snap.setdefault('inv', []).append({"amount": act['amount'], "start_time": ph.isoformat()})
+                            if act['type'] == "REF_CLAIM":
+                                snap['wallet'] = snap.get('wallet', 0) + act['amount']
+                            
+                            for h in snap.get('history', []):
+                                if h.get('request_id') == act.get('request_id'): h['status'] = "CONFIRMED"
+                            
+                            snap['pending_actions'].pop(idx)
+                            transaction.set(ref, snap)
+                        tx = db.transaction()
+                        process_approval(tx, user_ref)
+                        st.rerun()
+                    if c2.button("REJECT", key=f"rj_{u}_{idx}"):
+                        if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
+                        u_data['pending_actions'].pop(idx)
+                        save(u, u_data)
+                        st.rerun()
+    with t2:
+        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet'), "REF": i.get('ref_by')} for n, i in reg.items()])
+    with t3:
+        for u_n, u_i in reg.items():
+            u_h = u_i.get('history', [])
+            if u_h:
+                st.markdown(f"**Investor: {u_n}**")
+                for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
+                st.markdown("---")
+
+# ==========================================
+# NAVIGATION & AUTH
+# ==========================================
+elif st.session_state.page == "boss_key":
+    boss_pass = st.text_input("error execution", type="password", key="boss_in")
+    if boss_pass:
+        if boss_pass == st.secrets.get("BOSS_KEY", "0102030405"):
+            st.session_state.is_boss = True
+            st.session_state.page = "admin"
+            st.rerun()
+
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME", key="login_u").upper().strip()
+        p = st.text_input("PIN", type="password", key="login_p")
+        if st.button("GO", key="login_btn"):
             r_data = get_user_data(u)
             if r_data and str(r_data.get('pin')) == p: 
                 st.session_state.user = u
@@ -508,39 +590,24 @@ elif st.session_state.page == "auth":
 
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val, key="r_inv").upper().strip()
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_inv").upper().strip()
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_u").upper().strip()
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
         
-        # Request: Full Name guidance
-        nu = st.text_input("Full Name (First, Middle, Last Name)", key="r_name").upper().strip()
-        
-        # Request: Double PIN confirmation
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="r_p1")
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="r_p2")
-        
-        if st.button("CREATE", key="r_btn"):
-            if not nu:
+        if st.button("CREATE", key="reg_btn"):
+            if not nu: 
                 st.error("Please input your First, Middle, and Last name.")
-            elif len(np) != 6:
+            elif len(np) != 6: 
                 st.error("PIN must be exactly 6 digits.")
-            elif np != np_confirm:
+            elif np != np_confirm: 
                 st.error("PINs do not match. Please try again.")
             else:
-                # Save to database
-                save(nu, {
-                    "pin": np, 
-                    "wallet": 0.0, 
-                    "ref_by": inv_n, 
-                    "inv": [], 
-                    "history": [], 
-                    "pending_actions": [], 
-                    "has_deposited": False, 
-                    "claimed_refs": []
-                })
-                # Success message
+                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
-            
+                            
 elif st.session_state.page == "boss_key":
     boss_pass = st.text_input("error execution (donot tap anything)", type="password", placeholder="...")
     if boss_pass:
