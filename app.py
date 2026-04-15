@@ -622,22 +622,51 @@ elif st.session_state.page == "auth":
         inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_invitor").upper().strip()
         
         # Added key="reg_full_name"
-        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_full_name").upper().strip()
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    
+    with t1:
+        # Line 407: Added key="l_user" to fix the Duplicate ID error
+        u = st.text_input("NAME", key="l_user").upper().strip()
+        p = st.text_input("PIN", type="password", key="l_pin")
+        if st.button("GO", key="l_btn"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+            else:
+                st.error("Invalid Name or PIN")
+
+    with t2:
+        inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="r_inv").upper().strip()
         
-        # Added unique keys for the double PIN fields
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_pin1")
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_pin2")
+        # Requirement: GUIDANCE FOR FULL NAME
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="r_user").upper().strip()
         
-        if st.button("CREATE"):
+        # Requirement: DOUBLE PIN CONFIRMATION
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="r_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="r_p2")
+        
+        if st.button("CREATE", key="r_btn"):
             if not nu:
                 st.error("Please input your First, Middle, and Last name.")
             elif len(np) != 6:
-                # Corrected your request: Double PIN confirmation
                 st.error("PIN must be exactly 6 digits.")
             elif np != np_confirm:
                 st.error("PINs do not match. Please try again.")
             else:
-                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
+                save(nu, {
+                    "pin": np, 
+                    "wallet": 0.0, 
+                    "ref_by": inv_n, 
+                    "inv": [], 
+                    "history": [], 
+                    "pending_actions": [], 
+                    "has_deposited": False, 
+                    "claimed_refs": []
+                })
+                # Success instruction
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
