@@ -671,7 +671,38 @@ elif st.session_state.page == "auth":
         np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
         np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
         
-        if st.button("CREATE", key="reg_btn"):
+        if st.button("CREATE", key="reg_btn"):# ==========================================
+# 4. NAVIGATION & AUTH
+# ==========================================
+elif st.session_state.page == "boss_key":
+    boss_pass = st.text_input("error execution", type="password", key="boss_access")
+    if boss_pass:
+        if boss_pass == st.secrets.get("BOSS_KEY", "0102030405"):
+            st.session_state.is_boss = True
+            st.session_state.page = "admin"
+            st.rerun()
+
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        u = st.text_input("NAME", key="l_user").upper().strip()
+        p = st.text_input("PIN", type="password", key="l_pin")
+        if st.button("GO", key="l_btn"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
+                st.session_state.user = u
+                st.rerun()
+            else:
+                st.error("Invalid Name or PIN")
+
+    with t2:
+        inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="r_inv").upper().strip()
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="r_user").upper().strip()
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="r_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="r_p2")
+        
+        if st.button("CREATE", key="r_btn"):
             if not nu: st.error("Please input your First, Middle, and Last name.")
             elif len(np) != 6: st.error("PIN must be exactly 6 digits.")
             elif np != np_confirm: st.error("PINs do not match. Please try again.")
@@ -681,7 +712,9 @@ elif st.session_state.page == "auth":
                 time.sleep(2); st.rerun()
 
 else:
-    # --- RESTORED ADVERTISEMENT LANDING PAGE ---
+    # ==========================================
+    # 5. UI RESTORED: ADVERTISEMENT LANDING PAGE
+    # ==========================================
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -690,20 +723,15 @@ else:
 <h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">20% WEEKLY VELOCITY</h4>
 <p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">While traditional stocks grow 10% a year, our engine executes 20% growth in just 7 days.</p>
 </div>
-<div style="background: #1c2128; padding: 15px; border-radius: 12px; border-left: 3px solid #00ff88; margin-bottom: 15px;">
-<h4 style="margin: 0; color: #ffffff; font-size: 0.9rem;">COMPOUNDING ROLLS</h4>
-<p style="margin: 5px 0 0 0; color: #8b949e; font-size: 0.8rem;">Reinvest your 7-day gains to turbocharge your wealth through exponential cycles.</p>
-</div>
 <div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #00ff88; margin-bottom: 10px;">
 <span style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">⚡️ 20% ROI + 20% UNLIMITED DIVIDENDS</span><br>
 <span style="color: #ffffff; font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-top: 5px;">TRUSTED BY THOUSANDS OF INVESTORS LOCAL & INTERNATIONAL</span>
 </div>
 </div>
 """, unsafe_allow_html=True)
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True, key="join_btn"): 
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True, key="join_community"): 
         st.session_state.page = "auth"
         st.rerun()
-    if st.button(".", key="secret_boss"): 
+    if st.button(".", key="secret_boss_trigger"): 
         st.session_state.page = "boss_key"
         st.rerun()
-                
