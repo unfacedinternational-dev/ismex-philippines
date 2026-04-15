@@ -492,7 +492,6 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                 st.markdown("---")
 
 elif st.session_state.page == "auth":
-elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     
     with t1:
