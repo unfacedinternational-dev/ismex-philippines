@@ -671,9 +671,15 @@ elif st.session_state.page == "auth":
         np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
         np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
         
-        if st.button("CREATE", key="reg_btn"):# ==========================================
-# 4. NAVIGATION & AUTH
-# ==========================================
+# --- Line 674 ---
+if st.button("REJECT", key=f"rj_{u}_{idx}"):
+    if act['type'] in ["WITHDRAW", "REINVEST"]:
+        u_data['wallet'] += act['amount']
+    u_data['pending_actions'].pop(idx)
+    save(u, u_data)
+    st.rerun()
+
+# --- Line 677 (Flush to the left!) ---
 elif st.session_state.page == "boss_key":
     boss_pass = st.text_input("error execution", type="password", key="boss_access")
     if boss_pass:
@@ -681,7 +687,7 @@ elif st.session_state.page == "boss_key":
             st.session_state.is_boss = True
             st.session_state.page = "admin"
             st.rerun()
-
+        
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     with t1:
