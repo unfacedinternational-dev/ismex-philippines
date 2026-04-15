@@ -632,6 +632,31 @@ elif st.session_state.page == "auth":
         if st.button("GO", key="l_btn"):
             r_data = get_user_data(u)
             if r_data and str(r_data.get('pin')) == p: 
+# --- Line 390 (End of Admin Logic) ---
+                        u_data['pending_actions'].pop(idx)
+                        save(u, u_data)
+                        st.rerun()
+
+# ==========================================
+# 4. NAVIGATION & AUTH
+# ==========================================
+elif st.session_state.page == "boss_key":
+    boss_pass = st.text_input("error execution", type="password", key="boss_in")
+    if boss_pass:
+        if boss_pass == st.secrets.get("BOSS_KEY", "0102030405"):
+            st.session_state.is_boss = True
+            st.session_state.page = "admin"
+            st.rerun()
+
+elif st.session_state.page == "auth":
+    t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    with t1:
+        # Added key="login_u" to fix Line 407
+        u = st.text_input("NAME", key="login_u").upper().strip()
+        p = st.text_input("PIN", type="password", key="login_p")
+        if st.button("GO", key="login_btn"):
+            r_data = get_user_data(u)
+            if r_data and str(r_data.get('pin')) == p: 
                 st.session_state.user = u
                 st.rerun()
             else:
@@ -639,40 +664,24 @@ elif st.session_state.page == "auth":
 
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val, key="r_inv").upper().strip()
+        inv_n = st.text_input("Invitor Name", value=inv_val, key="reg_inv").upper().strip()
+        # Requirement: Full Name Guidance
+        nu = st.text_input("Full Name (First, Middle, Last Name)", key="reg_u").upper().strip()
+        # Requirement: Double PIN Confirmation
+        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="reg_p1")
+        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="reg_p2")
         
-        # Requirement: GUIDANCE FOR FULL NAME
-        nu = st.text_input("Full Name (First, Middle, Last Name)", key="r_user").upper().strip()
-        
-        # Requirement: DOUBLE PIN CONFIRMATION
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6, key="r_p1")
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6, key="r_p2")
-        
-        if st.button("CREATE", key="r_btn"):
-            if not nu:
-                st.error("Please input your First, Middle, and Last name.")
-            elif len(np) != 6:
-                st.error("PIN must be exactly 6 digits.")
-            elif np != np_confirm:
-                st.error("PINs do not match. Please try again.")
+        if st.button("CREATE", key="reg_btn"):
+            if not nu: st.error("Please input your First, Middle, and Last name.")
+            elif len(np) != 6: st.error("PIN must be exactly 6 digits.")
+            elif np != np_confirm: st.error("PINs do not match. Please try again.")
             else:
-                save(nu, {
-                    "pin": np, 
-                    "wallet": 0.0, 
-                    "ref_by": inv_n, 
-                    "inv": [], 
-                    "history": [], 
-                    "pending_actions": [], 
-                    "has_deposited": False, 
-                    "claimed_refs": []
-                })
-                # Success instruction
+                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
                 st.success("Registration Successful! Please proceed to LOGIN now.")
-                time.sleep(2)
-                st.rerun()
-    
+                time.sleep(2); st.rerun()
+
 else:
-    # --- FULL ADVERTISEMENT LANDING PAGE ---
+    # --- RESTORED ADVERTISEMENT LANDING PAGE ---
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
@@ -691,10 +700,10 @@ else:
 </div>
 </div>
 """, unsafe_allow_html=True)
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True, key="join_btn"): 
         st.session_state.page = "auth"
         st.rerun()
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-            
+                
