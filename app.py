@@ -378,12 +378,12 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
-    with t1:
-                u_login = st.text_input("NAME").upper().strip()
+        with t1:
+        u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
-
-        # This line must line up exactly with u_login above
-        r_data = {} 
+        
+        # This line MUST line up with u_login
+        r_data = {}
 
         if st.button("GO", key="login_btn"):
             r_data = get_user_data(u_login)
@@ -393,8 +393,7 @@ elif st.session_state.page == "auth":
                 st.rerun()
             else:
                 st.error("Invalid Username or PIN")
-                
-                
+                    
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
         inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
