@@ -410,18 +410,17 @@ elif st.session_state.page == "auth":
                 st.rerun()
         else:
             st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
-
-        with t2:
-        st.markdown('<div class="main-header">INVESTOR REGISTRATION</div>', unsafe_with_html=True)
+with t2:
+st.markdown('<div class="main-header">INVESTOR REGISTRATION</div>', unsafe_with_html=True)
         
         # Original logic: Check for referral in URL
-        invitor_id = st.query_params.get("ref", "")
+invitor_id = st.query_params.get("ref", "")
         
-        new_u = st.text_input("FULL NAME").upper().strip()
+new_u = st.text_input("FULL NAME").upper().strip()
         # FIXED: Updated to 6-digit PIN as per your instructions
-        new_p = st.text_input("SET 6-DIGIT PIN", type="password", help="Must be 6 digits", max_chars=6)
-        conf_p = st.text_input("CONFIRM PIN", type="password", max_chars=6)
-        ref_by = st.text_input("INVITOR ID (Optional)", value=invitor_id).upper().strip()
+new_p = st.text_input("SET 6-DIGIT PIN", type="password", help="Must be 6 digits", max_chars=6)
+conf_p = st.text_input("CONFIRM PIN", type="password", max_chars=6)
+ref_by = st.text_input("INVITOR ID (Optional)", value=invitor_id).upper().strip()
 
         if st.button("CREATE MY ISMEX ACCOUNT", key="reg_final"):
             if not new_u or not new_p:
