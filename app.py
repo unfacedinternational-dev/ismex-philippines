@@ -93,8 +93,6 @@ if "ref" in st.query_params:
     st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
 
 # ==========================================
-# 3. USER DASHBOARD
-# ==========================================
 # 1. INITIALIZE ALL STATE VARIABLES
 if 'user' not in st.session_state: st.session_state.user = None
 if 'page' not in st.session_state: st.session_state.page = 'landing'
@@ -400,44 +398,20 @@ elif st.session_state.page == "auth":
         # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-        if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
-            # These lines MUST be indented 12 spaces (4 more than the 'if')
-            if st.session_state.get('user'):
-                u_login = st.session_state.user
-                r_data = get_user_data(u_login)
-            else:
-                u_login = ""
-                r_data = {}
-                
-# 2. Any code that uses r_data (like ROI or Balances) must be BELOW this gate
-
+                if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+            r_data = get_user_data(u_login)
             
-            if r_data and str(r_data.get('pin')) == p_login:
+            # Use .get() and force str() to be 100% sure
+            db_pin = str(r_data.get('pin', '')).strip()
+            input_pin = str(p_login).strip()
+
+            if r_data and db_pin == input_pin:
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
                 st.rerun()
             else:
-                st.error("Invalid Username or PIN")
-
-    with t2:
-        inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
-        inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
-        nu = st.text_input("Full Name (First, Middle, Last Name)").upper().strip()
-        np = st.text_input("PIN (6 digits)", type="password", max_chars=6)
-        np_confirm = st.text_input("Confirm PIN", type="password", max_chars=6)
-        
-        if st.button("CREATE"):
-            if not nu:
-                st.error("Please input your First, Middle, and Last name.")
-            elif len(np) != 6:
-                st.error("PIN must be exactly 6 digits.")
-            elif np != np_confirm:
-                st.error("PINs do not match. Please try again.")
-            else:
-                save(nu, {"pin":np, "wallet":0.0, "ref_by":inv_n, "inv":[], "history":[], "pending_actions":[], "has_deposited":False, "claimed_refs": []})
-                st.success("Registration Successful! Please proceed to LOGIN now.")
-                time.sleep(2)
-                st.rerun()
+                st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
+                
 else:
     # START THE YELLOW STYLE ZONE
     st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
