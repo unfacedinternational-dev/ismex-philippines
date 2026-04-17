@@ -397,14 +397,14 @@ elif st.session_state.page == "auth":
         # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-                    if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+        if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
             r_data = get_user_data(u_login)
             
             # Use .get() and force str() to be 100% sure
             db_pin = str(r_data.get('pin', '')).strip()
             input_pin = str(p_login).strip()
 
-            if r_data and db_pin == input_pin:
+        if r_data and db_pin == input_pin:
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
                 st.rerun()
