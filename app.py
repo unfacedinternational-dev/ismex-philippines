@@ -256,8 +256,7 @@ async function copyRef() {{
             <div style="padding: 10px; border-bottom: 1px solid #30363d; display: flex; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 13px; font-weight: bold; color: white;">{ref_name}</span>
-                    <span style="font-size: 12px; color: #00ff88; font-weight: bold;">+PHP{comm:,.0f}</span>
-                </div>
+                    <span style="font-size: 12px; color: #00ff88; font-weight: bold;">+PHP {int(comm)}</span>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 11px; color: #8b949e;">1st Dep: PHP{f_dep:,.0f}</span>
                     <span style="font-size: 10px; font-style: italic; color: #8b949e;">{"Sent to Admin" if ref_name in claimed_list else "Waiting Deposit" if f_dep == 0 else "Ready"}</span>
