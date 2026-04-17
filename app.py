@@ -14,7 +14,7 @@ st.markdown("""
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; }
 .stApp { background-color: #0e1117 !important; }
 
-/* 2. DASHBOARD BUTTONS (FORCE SOLID GREEN) */
+/* 2. DASHBOARD BUTTONS (SOLID GREEN) */
 [data-testid="column"] button {
     background-color: #1c2128 !important;
     color: #00ff88 !important;
@@ -25,7 +25,7 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; }
     font-weight: bold !important;
 }
 
-/* 3. JOIN BUTTON (FORCE SOLID YELLOW) */
+/* 3. JOIN BUTTON (SOLID YELLOW) */
 .landing-page-only button {
     background-color: #ffcc00 !important;
     color: #000000 !important;
@@ -37,24 +37,28 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; }
     text-transform: uppercase !important;
 }
 
-/* 4. EMERGENCY TEXT FIX (FORCES TEXT TO SHOW) */
+/* 4. THE SECRET ADMIN DOT (INVISIBLE & PUSHED DOWN) */
+div.stButton > button[key="secret_boss"] {
+    background: transparent !important;
+    color: #222 !important; /* Extremely dark grey, nearly invisible on black */
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin-top: 50px !important; /* This pushes it down 2-3 extra spaces */
+    font-size: 10px !important;
+}
+
+/* 5. EMERGENCY TEXT FIX */
 button p {
     color: inherit !important;
     font-weight: inherit !important;
-    display: block !important;
 }
-
-/* 5. BALANCE BOXES */
-.balance-box {
-    background: #1c2128;
-    padding: 15px; 
-    border-radius: 15px; 
-    border: 2px solid #00ff88;
-    text-align: center;
-}
-.balance-box h1 { color: #00ff88 !important; margin: 0; }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ==========================================
@@ -433,11 +437,14 @@ else:
         st.session_state.page = "auth"
         st.rerun()
         
-    # END THE YELLOW STYLE ZONE
+    # 1. END THE YELLOW STYLE ZONE
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # YOUR SECRET BOSS BUTTON
+    # 2. ONE SPACE DOWN (Visible on mobile)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. THE SECRET BOSS BUTTON
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
-    
+        
