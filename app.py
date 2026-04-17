@@ -386,7 +386,15 @@ elif st.session_state.page == "auth":
         r_data = {}
 
         if st.button("GO", key="login_btn"):
-            r_data = get_user_data(u_login)
+            # --- THE SAFETY GATE ---
+if st.session_state.user:
+    # Only runs if someone is logged in
+    u_login = st.session_state.user
+    r_data = get_user_data(u_login)
+else:
+    # Keeps the app from crashing while on the Login/Register page
+    r_data = {}
+    
             if r_data and str(r_data.get('pin')) == p_login:
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
