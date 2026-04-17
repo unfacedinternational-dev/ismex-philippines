@@ -387,8 +387,18 @@ elif st.session_state.page == "auth":
         r_data = {}
 
         if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
-            # Indented correctly to be 'inside' the button
-            r_data = get_user_data(u_login)
+            # --- END OF PAGE LOGIC ---
+
+# 1. Put this at the very bottom (0 spaces from the left wall)
+if st.session_state.get('user'):
+    u_login = st.session_state.user
+    r_data = get_user_data(u_login)
+else:
+    u_login = ""
+    r_data = {}
+
+# 2. Any code that uses r_data (like ROI or Balances) must be BELOW this gate
+
             
             if r_data and str(r_data.get('pin')) == p_login:
                 st.session_state.user = u_login
