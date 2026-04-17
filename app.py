@@ -408,8 +408,8 @@ elif st.session_state.page == "auth":
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
                 st.rerun()
-            else:
-                st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
+        else:
+            st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
 
     with t2:
         st.info("Registration is currently managed by the Admin.")
