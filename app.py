@@ -447,7 +447,6 @@ elif st.session_state.page == "auth":
                 st.success("Registration Successful! Please proceed to LOGIN now.")
                 time.sleep(2)
                 st.rerun()
-
     else:
         # START THE YELLOW STYLE ZONE
         st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
@@ -484,4 +483,4 @@ elif st.session_state.page == "auth":
         if st.button(".", key="secret_boss"): 
             st.session_state.page = "boss_key"
             st.rerun()
-                
+            
