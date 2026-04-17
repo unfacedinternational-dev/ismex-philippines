@@ -358,7 +358,7 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
-                                st.rerun()
+                        st.rerun()
 
     with t3:
         try:
@@ -397,13 +397,6 @@ elif st.session_state.page == "auth":
             else:
                 st.error("Invalid Username or PIN")
 
-    with t2:
-        st.info("Registration is currently managed by the Admin.")
-            
-                st.rerun()
-            else:
-                st.error("Invalid Username or PIN")
-                    
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
         inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
