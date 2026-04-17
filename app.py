@@ -358,24 +358,22 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
                         st.rerun()
-            with t3:
-        # 1. Indent these 4 spaces to the right
+                with t3:
         try:
-            reg = load_reg() 
+            reg = load_reg()
         except:
             reg = {}
-            st.error("Database connection busy. Refreshing...")
+            st.warning("Data loading... please wait.")
 
-        # 2. Loop through users
         for u_n, u_i in reg.items():
             u_h = u_i.get('history', [])
             if u_h:
                 st.markdown(f"**Investor: {u_n}**")
                 for h in reversed(u_h):
                     amt = h.get('amount', 0)
-                    # Cleaned logic: No symbols or complex decimals
-                    st.write(f"﹂ {h['type']} | PHP {int(amt)} | {h['status']}")
+                    st.write(f"﹂ {h.get('type')} | PHP {int(amt)} | {h.get('status')}")
                 st.markdown("---")
+            
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
