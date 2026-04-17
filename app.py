@@ -1,3 +1,4 @@
+u_login = "" 
 import streamlit as st
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -380,14 +381,19 @@ elif st.session_state.page == "auth":
     with t1:
         u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
+                # --- THE SAFETY NET (Add this line above the button) ---
+        r_data = {} 
+
         if st.button("GO"):
+            # This only runs when the button is pressed
             r_data = get_user_data(u_login)
-            if r_data and str(r_data.get('pin')) == p_login: 
+            if r_data and str(r_data.get('pin')) == p_login:
                 st.session_state.user = u_login
+                st.session_state.page = "dashboard"
                 st.rerun()
             else:
-                st.error("Invalid Name or PIN")
-
+                st.error("Invalid Username or PIN")
+                
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
         inv_n = st.text_input("Invitor Name", value=inv_val).upper().strip()
