@@ -472,14 +472,17 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # THE YELLOW JOIN BUTTON
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
+    else:
+    st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
+    
+    # ... your advertisement markdown ...
+    
+    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True):
         st.session_state.page = "auth"
         st.rerun()
-
-    # END THE YELLOW STYLE ZONE
+        
     st.markdown('</div>', unsafe_allow_html=True)
-
+    
     # YOUR SECRET BOSS BUTTON (Always outside the container)
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
