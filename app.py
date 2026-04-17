@@ -381,18 +381,19 @@ elif st.session_state.page == "auth":
     with t1:
         u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
-                # --- THE SAFETY NET (Add this line above the button) ---
+                # 1. This must be OUTSIDE and ABOVE the button
         r_data = {} 
 
-        if st.button("GO"):
-            # This only runs when the button is pressed
+        # 2. Now the button logic starts
+        if st.button("GO", key="login_btn"):
             r_data = get_user_data(u_login)
-            if r_data and str(r_data.get('pin')) == p_login:
+            if r_data and str(r_data.get('pin')) == p_login: 
                 st.session_state.user = u_login
-                st.session_state.page = "dashboard"
                 st.rerun()
             else:
                 st.error("Invalid Username or PIN")
+    
+                
                 
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
