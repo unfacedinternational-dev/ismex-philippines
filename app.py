@@ -80,11 +80,27 @@ if "ref" in st.query_params:
 # ==========================================
 # 3. USER DASHBOARD
 # ==========================================
+# 1. INITIALIZE ALL STATE VARIABLES
+if 'user' not in st.session_state: st.session_state.user = None
+if 'page' not in st.session_state: st.session_state.page = 'landing'
+if 'is_boss' not in st.session_state: st.session_state.is_boss = False
+if 'action_type' not in st.session_state: st.session_state.action_type = None
+
+# 2. THE ANTI-CRASH LINE (PRE-DEFINING VARIABLES)
+u_login = "" 
+data = {}
+
+# 3. CAPTURE REFERRAL & LOGIN
+if "ref" in st.query_params:
+    st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
+
+# 4. FETCH LOGGED-IN DATA SAFELY
 if st.session_state.user:
-    data = get_user_data(st.session_tostate.user)
+    data = get_user_data(st.session_state.user)
     if not data: 
         st.session_state.user = None
         st.rerun()
+        
     
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
@@ -342,15 +358,19 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
                         st.rerun()
-    with t2:
-        st.table([{"NAME": n, "PIN": i.get('pin'), "WALLET": i.get('wallet'), "REF": i.get('ref_by')} for n, i in reg.items()])
-    with t3:
+        with t3:
+        # Load the registry if it isn't already loaded
+        reg = load_reg() 
         for u_n, u_i in reg.items():
             u_h = u_i.get('history', [])
             if u_h:
                 st.markdown(f"**Investor: {u_n}**")
-                for h in reversed(u_h): st.write(f"﹂ {h['type']} | ₱{h['amount']:,.2f} | {h['status']}")
+                for h in reversed(u_h):
+                    # Fixed: Changed ₱ to PHP and simplified the number format
+                    amt = h.get('amount', 0)
+                    st.write(f"﹂ {h['type']} | PHP {int(amt)} | {h['status']}")
                 st.markdown("---")
+                
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
