@@ -385,9 +385,9 @@ elif st.session_state.page == "auth":
         # This line MUST line up with u_login
         r_data = {}
 
-        if st.button("GO", key="login_btn"):
-        # This MUST be indented 8 spaces to be 'inside' the button
-        r_data = get_user_data(u_login)
+        if st.button("ENTER ISMEX DASHBORD", key="login_btn"):
+# This MUST be indented 8 spaces to be 'inside' the button
+r_data = get_user_data(u_login)
         if r_data and str(r_data.get('pin')) == p_login:
             st.session_state.user = u_login
             st.rerun()
