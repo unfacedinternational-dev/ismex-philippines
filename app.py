@@ -440,14 +440,15 @@ else:
         st.session_state.page = "auth"
         st.rerun()
         
-        # 1. END THE YELLOW STYLE ZONE
+        # 1. Close the landing page styling
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # 2. SEPARATOR
+    # 2. Add the physical gap
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3. THE SECRET BOSS BUTTON (Now correctly unboxed)
+    # 3. The Secret Button (This will be unboxed by the CSS)
     if st.button(".", key="secret_boss"): 
         st.session_state.page = "boss_key"
         st.rerun()
+
         
