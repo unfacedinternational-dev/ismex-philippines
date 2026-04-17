@@ -1,4 +1,3 @@
-u_login = "" 
 import streamlit as st
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -398,7 +397,7 @@ elif st.session_state.page == "auth":
         # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-            if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+                    if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
             r_data = get_user_data(u_login)
             
             # Use .get() and force str() to be 100% sure
@@ -411,6 +410,10 @@ elif st.session_state.page == "auth":
                 st.rerun()
             else:
                 st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
+
+    with t2:
+        st.info("Registration is currently managed by the Admin.")
+        
                 
 else:
     # START THE YELLOW STYLE ZONE
