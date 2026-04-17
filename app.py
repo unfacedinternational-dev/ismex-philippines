@@ -149,11 +149,11 @@ if st.session_state.user:
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        if st.button("📥 DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
+        if st.button("DEPOSIT"): st.session_state.action_type = "DEPOSIT CAPITAL"
     with c2:
-        if st.button("📤 WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
+        if st.button("WITHDRAW"): st.session_state.action_type = "WITHDRAW BALANCE"
     with c3:
-        if st.button("🔄 REINVEST"): st.session_state.action_type = "REINVEST"
+        if st.button("REINVEST"): st.session_state.action_type = "REINVEST"
 
     if st.button("LOGOUT"): 
         st.session_state.user = None
@@ -256,10 +256,10 @@ async function copyRef() {{
             <div style="padding: 10px; border-bottom: 1px solid #30363d; display: flex; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 13px; font-weight: bold; color: white;">{ref_name}</span>
-                    <span style="font-size: 12px; color: #00ff88; font-weight: bold;">+₱{comm:,.0f}</span>
+                    <span style="font-size: 12px; color: #00ff88; font-weight: bold;">+PHP{comm:,.0f}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 11px; color: #8b949e;">1st Dep: ₱{f_dep:,.0f}</span>
+                    <span style="font-size: 11px; color: #8b949e;">1st Dep: PHP{f_dep:,.0f}</span>
                     <span style="font-size: 10px; font-style: italic; color: #8b949e;">{"Sent to Admin" if ref_name in claimed_list else "Waiting Deposit" if f_dep == 0 else "Ready"}</span>
                 </div>
             </div>
@@ -274,7 +274,7 @@ async function copyRef() {{
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-    st.subheader("🚀 RUNNING CAPITALS")
+    st.subheader("RUNNING CAPITALS")
     for idx, item in enumerate(list(data.get('inv', []))):
         start_dt = datetime.fromisoformat(item['start_time'])
         end_dt = start_dt + timedelta(days=7)
@@ -301,7 +301,7 @@ async function copyRef() {{
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
     <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
-        ⚠️ <b>STRICT 1-HOUR WINDOW:</b><br>
+          <b>STRICT 1-HOUR WINDOW:</b><br>
         Capital & Interest ready to pull out on:<br>
         <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b> until <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
         <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
@@ -311,7 +311,7 @@ async function copyRef() {{
 </div>
 """, unsafe_allow_html=True)
 
-    st.subheader("📜 My History")
+    st.subheader("My History")
     for h in reversed(data.get('history', [])):
         st.markdown(f"<p style='font-size:8px; margin:2px 0; color:#8b949e;'>• {h['type']} | ₱{h['amount']:,.2f} | <span style='color:#00ff88;'>{h['status']}</span></p>", unsafe_allow_html=True)
       # ==========================================
@@ -327,13 +327,13 @@ elif st.session_state.page == "boss_key":
             st.rerun()
 
 elif st.session_state.page == "admin" and st.session_state.is_boss:
-    st.title("👑 ADMIN")
+    st.title("ADMIN")
     if st.button("EXIT"): 
         st.session_state.is_boss = False
         st.session_state.page = "landing"
         st.rerun()
     reg = load_reg()
-    t1, t2, t3 = st.tabs(["📥 APPROVALS", "👥 MEMBERS", "📜 HISTORY"])
+    t1, t2, t3 = st.tabs(["APPROVALS", "MEMBERS", "HISTORY"])
     with t1:
         for u, u_data in reg.items():
             pend = u_data.get('pending_actions', [])
@@ -437,7 +437,7 @@ else:
     """, unsafe_allow_html=True)
 
     # THE YELLOW JOIN BUTTON
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True):
+    if st.button("TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True):
         st.session_state.page = "auth"
         st.rerun()
         
