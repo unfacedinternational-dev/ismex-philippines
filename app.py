@@ -379,21 +379,21 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
     with t1:
-        u_login = st.text_input("NAME").upper().strip()
+                u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
-                # 1. This must be OUTSIDE and ABOVE the button
-                r_data = {} 
+
+        # This line must line up exactly with u_login above
+        r_data = {} 
 
         if st.button("GO", key="login_btn"):
-            # This is the line that was missing in your screenshot!
             r_data = get_user_data(u_login)
-            
             if r_data and str(r_data.get('pin')) == p_login:
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
                 st.rerun()
             else:
                 st.error("Invalid Username or PIN")
+                
                 
     with t2:
         inv_val = st.session_state.get('captured_ref', 'OFFICIAL')
