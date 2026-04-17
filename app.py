@@ -398,7 +398,7 @@ elif st.session_state.page == "auth":
         # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-                if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+            if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
             r_data = get_user_data(u_login)
             
             # Use .get() and force str() to be 100% sure
