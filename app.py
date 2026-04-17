@@ -142,7 +142,7 @@ if st.session_state.user:
     st.markdown(f"""
 <div class='balance-box'>
     <h3>AVAILABLE BALANCE</h3>
-    <h1>₱{max(0.0, wallet):,.2f}</h1>
+    <h1>PHP{max(0.0, wallet):,.2f}</h1>
 </div>
 """, unsafe_allow_html=True)
 
