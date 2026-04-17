@@ -48,13 +48,28 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; }
     margin-bottom: 20px;
 }
 
-/* 5. THE SECRET DOT (FORCE NO BOX) */
-button[key="secret_boss"] {
+/* This rule ONLY targets the button with the unique 'secret_boss' key */
+div.stButton > button[key="secret_boss"] {
+    background-color: transparent !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: #333 !important;
+    color: #444 !important; /* Dim grey dot */
+    width: 20px !important;  /* Tiny width so it's not a big invisible box */
+    height: 20px !important; /* Tiny height */
+    min-height: 0 !important;
+    padding: 0 !important;
     margin-top: 30px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}
+
+/* This rule ensures the 'p' tag inside the secret button doesn't force a box size */
+div.stButton > button[key="secret_boss"] p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 /* 6. BUTTON TEXT COLOR FIX */
