@@ -13,22 +13,7 @@ st.markdown("""
 <style>
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; display: none !important; }
 .stApp { background-color: #0e1117 !important; color: white; }
-/* BRIGHT YELLOW ATTRACTIVE JOIN BUTTON */
-.stButton > button {
-    transition: all 0.3s ease !important;
-}
 
-/* Specifically targeting the Join Button by its unique key */
-div.stButton > button[key="join_btn"] {
-    background-color: #ffcc00 !important; /* GOLD YELLOW */
-    color: #000000 !important; /* Black text for readability */
-    font-weight: 900 !important;
-    font-size: 1.2rem !important;
-    border: none !important;
-    border-radius: 10px !important;
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.4) !important;
-    height: 60px !important;
-}
 
 div.stButton > button[key="join_btn"]:hover {
     background-color: #ffff00 !important; /* BRIGHT YELLOW ON HOVER */
