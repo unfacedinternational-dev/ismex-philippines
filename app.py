@@ -96,6 +96,20 @@ if 'user' not in st.session_state: st.session_state.user = None
 if 'page' not in st.session_state: st.session_state.page = 'landing'
 if 'is_boss' not in st.session_state: st.session_state.is_boss = False
 if 'action_type' not in st.session_state: st.session_state.action_type = None
+# ... previous CSS styling lines ...
+</style>
+""", unsafe_allow_html=True)  # <--- ADD THIS LINE HERE
+
+# ==========================================
+# 2. DATABASE & STATE MANAGEMENT
+# ==========================================
+if 'user' not in st.session_state: st.session_state.user = None
+if 'page' not in st.session_state: st.session_state.page = 'landing'
+if 'is_boss' not in st.session_state: st.session_state.is_boss = False
+if 'action_type' not in st.session_state: st.session_state.action_type = None
+
+if "ref" in st.query_params:
+    st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
 
 if "ref" in st.query_params:
     st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
