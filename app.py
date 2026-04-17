@@ -4,7 +4,21 @@ from google.cloud import firestore
 from google.oauth2 import service_account
 from datetime import datetime, timedelta
 import time
+# ==========================================
+# 2. DATABASE & REGISTRY FUNCTIONS
+# ==========================================
+def load_reg():
+    # Use your existing logic here - this is a safety backup
+    try:
+        # If you're using Firestore (from line 3), keep this simple for now:
+        return {} 
+    except:
+        return {}
 
+def get_user_data(username):
+    reg = load_reg()
+    return reg.get(username, {})
+    
 # ==========================================
 # 1. UI CONFIGURATION (FULL CUSTOM CSS)
 # ==========================================
