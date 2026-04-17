@@ -232,7 +232,7 @@ async function copyRef() {{
     }}
 }}
 </script>
-<button onclick="copyRef()" style="width: 100%; background-color: #1c2128; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">📋 COPY REFERRAL LINK</button>
+<button onclick="copyRef()" style="width: 100%; background-color: #1c2128; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">COPY REFERRAL LINK</button>
 """
     st.components.v1.html(copy_js, height=60)
 
