@@ -386,7 +386,10 @@ elif st.session_state.page == "auth":
 
         # 2. Now the button logic starts
         if st.button("GO", key="login_btn"):
-            r_data = get_user_data(u_login)
+            r_data = {} # FREE! Exists as soon as the page loads.
+if st.button("GO"):
+    ...
+    
             if r_data and str(r_data.get('pin')) == p_login: 
                 st.session_state.user = u_login
                 st.rerun()
