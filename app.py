@@ -13,6 +13,32 @@ st.markdown("""
 <style>
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; display: none !important; }
 .stApp { background-color: #0e1117 !important; color: white; }
+/* MEGA ATTRACTIVE JOIN BUTTON */
+.stButton > button[key="join_btn"] {
+    background: linear-gradient(90deg, #00ff88, #00bd68) !important;
+    color: #0e1117 !important;
+    font-weight: 900 !important;
+    font-size: 1.2rem !important;
+    letter-spacing: 1px !important;
+    padding: 15px 20px !important;
+    border-radius: 50px !important; /* Rounded pill shape */
+    border: none !important;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
+    transition: all 0.3s ease !important;
+    animation: glowing-pulse 2s infinite !important;
+    text-transform: uppercase !important;
+}
+
+.stButton > button[key="join_btn"]:hover {
+    box-shadow: 0 0 40px rgba(0, 255, 136, 0.7) !important;
+    transform: scale(1.02) !important;
+}
+
+@keyframes glowing-pulse {
+    0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+}
 
 /* BALANCE BOX WRAPPER */
 .balance-box {
@@ -443,9 +469,17 @@ else:
 </div>
 </div>
 """, unsafe_allow_html=True)
-    if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True): 
-        st.session_state.page = "auth"
-        st.rerun()
-    if st.button(".", key="secret_boss"): 
-        st.session_state.page = "boss_key"
-        st.rerun()
+    # ==========================================
+# REVISED JOIN BUTTON
+# ==========================================
+st.markdown("<br>", unsafe_allow_html=True) # Adds a little space
+
+if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", key="join_btn", use_container_width=True): 
+    st.session_state.page = "auth"
+    st.rerun()
+
+# Keep your secret boss button as is
+if st.button(".", key="secret_boss"): 
+    st.session_state.page = "boss_key"
+    st.rerun()
+    
