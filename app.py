@@ -378,7 +378,7 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
-        with t1:
+    with t1:
         u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
         
