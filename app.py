@@ -15,17 +15,22 @@ header, [data-testid="stToolbar"], footer { visibility: hidden !important; displ
 .stApp { background-color: #0e1117 !important; color: white; }
 
 
-div.stButton > button[key="join_btn"]:hover {
-    background-color: #ffff00 !important; /* BRIGHT YELLOW ON HOVER */
-    box-shadow: 0 0 25px rgba(255, 204, 0, 0.7) !important;
-    transform: translateY(-2px) !important;
+/* Dashboard buttons stay the same */
+div.stButton > button {
+    background-color: #1c2128 !important;
+    border: 2px solid #00ff88 !important;
+    color: #00ff88 !important;
 }
 
-
-.stButton > button[key="join_btn"]:hover {
-    box-shadow: 0 0 40px rgba(0, 255, 136, 0.7) !important;
-    transform: scale(1.02) !important;
+/* New: Only buttons inside the landing-page-only div turn yellow */
+.landing-page-only div.stButton > button {
+    background-color: #ffcc00 !important; /* Yellow */
+    color: #000000 !important;
+    font-weight: 900 !important;
+    height: 65px !important;
+    border: 2px solid #ffffff !important;
 }
+
 
 @keyframes glowing-pulse {
     0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
@@ -444,6 +449,20 @@ elif st.session_state.page == "auth":
                 st.rerun()
 
 else:
+    # ADD THIS LINE BEFORE YOUR ADVERTISEMENT
+st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
+
+# --- YOUR ORIGINAL ADVERTISEMENT CODE STARTS HERE ---
+st.markdown(""" <div style="background: ... """) # Don't change anything in here!
+
+if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", use_container_width=True):
+    st.session_state.page = "auth"
+    st.rerun()
+# --- YOUR ORIGINAL ADVERTISEMENT CODE ENDS HERE ---
+
+# ADD THIS LINE AFTER THE JOIN BUTTON
+st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown("""
 <div style="background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%); padding: 25px; border-radius: 20px; border: 2px solid #00ff88; margin-bottom: 25px;">
 <h1 style="color: #00ff88; font-size: 1.8rem; text-align: center; margin-bottom: 5px; line-height: 1.2;">FORCE YOUR MONEY TO WORK</h1>
