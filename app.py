@@ -14,68 +14,52 @@ st.markdown("""
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; }
 .stApp { background-color: #0e1117 !important; }
 
-/* 2. REAL ACTION BUTTONS (DASHBOARD) */
-/* We target buttons inside columns so they get the green box */
-[data-testid="column"] div.stButton > button {
-    background-color: #1c2128 !important;
-    color: #00ff88 !important;
-    border: 2px solid #00ff88 !important;
-    height: 50px !important;
-    width: 100% !important;
-    border-radius: 8px !important;
-    font-weight: bold !important;
-}
-
-/* 3. JOIN BUTTON (SOLID YELLOW) */
-.landing-page-only button {
+/* 2. THE YELLOW JOIN BUTTON (FORCED) */
+.landing-page-only div.stButton > button {
     background-color: #ffcc00 !important;
     color: #000000 !important;
-    height: 65px !important;
+    height: 60px !important;
     width: 100% !important;
-    border: 3px solid #ffffff !important;
+    border: 2px solid #ffffff !important;
     border-radius: 12px !important;
     font-weight: 900 !important;
-    text-transform: uppercase !important;
+    opacity: 1 !important;
 }
 
-/* 4. BALANCE BOX (RE-ADDED & FIXED) */
-.balance-box {
-    background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%);
-    padding: 20px; 
-    border-radius: 15px; 
-    border: 2px solid #00ff88;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* This rule ONLY targets the button with the unique 'secret_boss' key */
-div.stButton > button[key="secret_boss"] {
+/* 3. THE SECRET DOT (TOTALLY STRIPPED) */
+/* This targets the button specifically to remove that box in your screenshot */
+div.stButton > button:has(p:contains(".")) {
     background-color: transparent !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: #444 !important; /* Dim grey dot */
-    width: 20px !important;  /* Tiny width so it's not a big invisible box */
-    height: 20px !important; /* Tiny height */
+    color: #333 !important; /* Makes the dot very dim */
     min-height: 0 !important;
-    padding: 0 !important;
-    margin-top: 30px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    display: block !important;
+    width: 30px !important;
+    margin-top: 20px !important;
 }
 
-/* This rule ensures the 'p' tag inside the secret button doesn't force a box size */
-div.stButton > button[key="secret_boss"] p {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1 !important;
+/* 4. DASHBOARD BUTTONS (GREEN BOXES) */
+[data-testid="column"] div.stButton > button {
+    background-color: #1c2128 !important;
+    color: #00ff88 !important;
+    border: 2px solid #00ff88 !important;
+    font-weight: bold !important;
 }
 
-/* 6. BUTTON TEXT COLOR FIX */
-button p { color: inherit !important; font-weight: inherit !important; }
+/* 5. THE TEXT FIX (CRITICAL) */
+/* This ensures the text 'TAP HERE' is black and visible */
+.landing-page-only div.stButton > button p {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}
+
+/* This ensures dashboard button text is green */
+[data-testid="column"] div.stButton > button p {
+    color: #00ff88 !important;
+}
 </style>
-""", unsafe_allow_html=True)
+
 
 
 
