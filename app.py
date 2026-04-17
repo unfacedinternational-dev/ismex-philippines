@@ -11,34 +11,49 @@ st.set_page_config(page_title="ISMEX Official", layout="wide")
 
 st.markdown("""
 <style>
+/* 1. CORE APP STYLING */
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; display: none !important; }
 .stApp { background-color: #0e1117 !important; color: white; }
 
-
-/* Dashboard buttons stay the same */
-div.stButton > button {
-    background-color: #1c2128 !important;
-    border: 2px solid #00ff88 !important;
-    color: #00ff88 !important;
-}
-
-/* New: Only buttons inside the landing-page-only div turn yellow */
+/* 2. THE YELLOW JOIN BUTTON (HIGHEST PRIORITY) */
 .landing-page-only div.stButton > button {
-    background-color: #ffcc00 !important; /* Yellow */
+    background-color: #ffcc00 !important;
     color: #000000 !important;
     font-weight: 900 !important;
+    font-size: 1.2rem !important;
     height: 65px !important;
-    border: 2px solid #ffffff !important;
+    width: 100% !important;
+    border: 3px solid #ffffff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 4px 20px rgba(255, 204, 0, 0.5) !important;
+    text-transform: uppercase !important;
 }
 
+/* 3. THE GREEN DASHBOARD BUTTONS (SOLID LOOK) */
+[data-testid="column"] div.stButton > button {
+    background-color: #1c2128 !important;
+    color: #00ff88 !important;
+    border: 2px solid #00ff88 !important; 
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    height: 50px !important;
+    width: 100% !important;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
+}
 
+/* 4. FIX FOR "FLAT TEXT" (FORCES BUTTON TEXT TO MATCH COLOR) */
+div.stButton > button p {
+    color: inherit !important;
+    font-weight: inherit !important;
+    margin: 0 !important;
+}
+
+/* 5. BALANCE BOX & ANIMATIONS */
 @keyframes glowing-pulse {
     0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
     50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.8); }
     100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
 }
-
-/* BALANCE BOX WRAPPER */
 .balance-box {
     background: linear-gradient(135deg, #1e222d 0%, #0e1117 100%);
     padding: 0.8rem; border-radius: 15px; border: 2px solid #00ff88;
@@ -47,55 +62,19 @@ div.stButton > button {
 .balance-box h3 { font-size: 0.7rem; margin: 0; color: #8b949e; letter-spacing: 1px; }
 .balance-box h1 { font-size: 1.9rem; margin: 0; color: #00ff88; }
 
-/* 2x SMALLER NESTED BUTTONS FOR CAPITALS */
+/* 6. NESTED BUTTONS (ROI/CAPITAL) */
 .nested-btn {
-    display: block;
-    width: 100%;
-    background-color: #1c2128;
-    border: 1px solid #30363d;
-    color: white;
-    border-radius: 6px;
-    padding: 4px 0;
-    font-size: 12px !important;
-    text-align: center;
-    text-decoration: none;
-    margin-top: 6px;
-    cursor: pointer;
+    display: block; width: 100%; background-color: #1c2128;
+    border: 1px solid #30363d; color: white; border-radius: 6px;
+    padding: 4px 0; font-size: 12px !important; text-align: center;
+    margin-top: 6px; cursor: pointer; text-decoration: none;
 }
 .nested-btn:hover { border-color: #00ff88; color: #00ff88; }
-.nested-btn.disabled { color: #444; border-color: #222; cursor: not-allowed; pointer-events: none; }
 
-/* FORCING MAIN BUTTONS TO BE HIGHLY VISIBLE */
-[data-testid="column"] div.stButton > button {
-    width: 100% !important;
-    background-color: #1c2128 !important;
-    border: 2px solid #00ff88 !important; 
-    color: #00ff88 !important;
-    font-weight: bold !important;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2) !important;
-    border-radius: 8px !important;
-}
-
-/* REGULAR BUTTON BOXES */
-div.stButton > button {
-    background-color: #1c2128 !important;
-    border: 1px solid #30363d !important;
-    border-radius: 8px !important;
-}
-
-/* SECRET ADMIN ENTRY */
+/* 7. SECRET DOT (INVISIBLE) */
 div.stButton > button:first-child[kind="secondary"] {
-    background-color: transparent !important;
-    color: white !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    font-size: 12px !important;
-    width: auto !important;
-    height: auto !important;
-    display: block;
-    margin: 20px auto 0 auto !important;
+    background: transparent !important; color: transparent !important;
+    border: none !important; box-shadow: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
