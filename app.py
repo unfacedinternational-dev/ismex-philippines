@@ -358,7 +358,8 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
                         st.rerun()
-                with t3:
+
+    with t3:
         try:
             reg = load_reg()
         except:
@@ -373,7 +374,6 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                     amt = h.get('amount', 0)
                     st.write(f"﹂ {h.get('type')} | PHP {int(amt)} | {h.get('status')}")
                 st.markdown("---")
-            
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
