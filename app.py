@@ -386,7 +386,7 @@ elif st.session_state.page == "auth":
         # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-        if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
             # --- END OF PAGE LOGIC ---
 
 # 1. Put this at the very bottom (0 spaces from the left wall)
