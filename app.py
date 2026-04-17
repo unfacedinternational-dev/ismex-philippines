@@ -291,8 +291,8 @@ async function copyRef() {{
         st.markdown(f"""
 <div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border-right: 1px solid #30363d; border-top: 1px solid #30363d; border-bottom: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
-        <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
-        <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
+        <<span style="color: #8b949e; font-weight: bold;">CAPITAL: \u20b1{item['amount']:,.2f}</span>
+        <span style="color: #00ff88; font-weight: bold;">ROI: \u20b1{roi_total:,.2f}</span>
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
     <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
