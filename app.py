@@ -60,44 +60,7 @@ div.stButton > button:has(p:contains(".")) {
 }
 </style>
 
-# ==========================================
-# 2. DATABASE & STATE MANAGEMENT
-# ==========================================
-@st.cache_resource
-def get_db():
-    if "firebase" in st.secrets:
-        info = dict(st.secrets["firebase"])
-        info["private_key"] = info["private_key"].replace("\\n", "\n")
-        creds = service_account.Credentials.from_service_account_info(info)
-        return firestore.Client(credentials=creds)
-    return None
 
-db = get_db()
-
-def get_user_data(username):
-    doc = db.collection("investors").document(username).get()
-    return doc.to_dict() if doc.exists else None
-
-def load_reg(): 
-    return {doc.id: doc.to_dict() for doc in db.collection("investors").stream()}
-
-def save(n, d): 
-    db.collection("investors").document(n).set(d)
-
-def atomic_update(username, update_dict):
-    user_ref = db.collection("investors").document(username)
-    @firestore.transactional
-    def _do(transaction, ref):
-        transaction.update(ref, update_dict)
-    atomic_tx = db.transaction()
-    _do(atomic_tx, user_ref)
-
-if 'user' not in st.session_state: st.session_state.user = None
-if 'page' not in st.session_state: st.session_state.page = 'landing'
-if 'is_boss' not in st.session_state: st.session_state.is_boss = False
-if 'action_type' not in st.session_state: st.session_state.action_type = None
-# ... previous CSS styling lines ...
-</style>
 """, unsafe_allow_html=True)  # <--- ADD THIS LINE HERE
 
 # ==========================================
