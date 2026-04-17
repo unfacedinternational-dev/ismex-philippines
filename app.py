@@ -13,21 +13,29 @@ st.markdown("""
 <style>
 header, [data-testid="stToolbar"], footer { visibility: hidden !important; display: none !important; }
 .stApp { background-color: #0e1117 !important; color: white; }
-/* MEGA ATTRACTIVE JOIN BUTTON */
-.stButton > button[key="join_btn"] {
-    background: linear-gradient(90deg, #00ff88, #00bd68) !important;
-    color: #0e1117 !important;
+/* BRIGHT YELLOW ATTRACTIVE JOIN BUTTON */
+.stButton > button {
+    transition: all 0.3s ease !important;
+}
+
+/* Specifically targeting the Join Button by its unique key */
+div.stButton > button[key="join_btn"] {
+    background-color: #ffcc00 !important; /* GOLD YELLOW */
+    color: #000000 !important; /* Black text for readability */
     font-weight: 900 !important;
     font-size: 1.2rem !important;
-    letter-spacing: 1px !important;
-    padding: 15px 20px !important;
-    border-radius: 50px !important; /* Rounded pill shape */
     border: none !important;
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
-    transition: all 0.3s ease !important;
-    animation: glowing-pulse 2s infinite !important;
-    text-transform: uppercase !important;
+    border-radius: 10px !important;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.4) !important;
+    height: 60px !important;
 }
+
+div.stButton > button[key="join_btn"]:hover {
+    background-color: #ffff00 !important; /* BRIGHT YELLOW ON HOVER */
+    box-shadow: 0 0 25px rgba(255, 204, 0, 0.7) !important;
+    transform: translateY(-2px) !important;
+}
+
 
 .stButton > button[key="join_btn"]:hover {
     box-shadow: 0 0 40px rgba(0, 255, 136, 0.7) !important;
@@ -477,6 +485,7 @@ st.markdown("<br>", unsafe_allow_html=True) # Adds a little space
 if st.button("🚀 TAP HERE TO JOIN THE COMMUNITY NOW", key="join_btn", use_container_width=True): 
     st.session_state.page = "auth"
     st.rerun()
+    
 
 # Keep your secret boss button as is
 if st.button(".", key="secret_boss"): 
