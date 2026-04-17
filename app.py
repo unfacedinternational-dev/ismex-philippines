@@ -411,10 +411,42 @@ elif st.session_state.page == "auth":
         else:
             st.error(f"Invalid for {u_login}. (System saw: {db_pin})")
 
-    with t2:
-        st.info("Registration is currently managed by the Admin.")
+        with t2:
+        st.markdown('<div class="main-header">INVESTOR REGISTRATION</div>', unsafe_with_html=True)
         
-                
+        # Original logic: Check for referral in URL
+        invitor_id = st.query_params.get("ref", "")
+        
+        new_u = st.text_input("FULL NAME").upper().strip()
+        # FIXED: Updated to 6-digit PIN as per your instructions
+        new_p = st.text_input("SET 6-DIGIT PIN", type="password", help="Must be 6 digits", max_chars=6)
+        conf_p = st.text_input("CONFIRM PIN", type="password", max_chars=6)
+        ref_by = st.text_input("INVITOR ID (Optional)", value=invitor_id).upper().strip()
+
+        if st.button("CREATE MY ISMEX ACCOUNT", key="reg_final"):
+            if not new_u or not new_p:
+                st.error("Missing information.")
+            # VALIDATION: Exactly 6 digits
+            elif len(new_p) != 6 or not new_p.isdigit():
+                st.error("PIN must be exactly 6 digits.")
+            elif new_p != conf_p:
+                st.error("PINs do not match.")
+            else:
+                reg = load_reg()
+                if new_u in reg:
+                    st.error("This Name is already registered.")
+                else:
+                    # Your original logic structure
+                    reg[new_u] = {
+                        "pin": int(new_p),
+                        "balance": 0,
+                        "roi_bal": 0,
+                        "invitor": ref_by if ref_by else "DIRECT",
+                        "referrals": [],
+                        "history": [{"type": "System", "amount": 0, "status": "Account Created"}]
+                    }
+                    save_reg(reg)
+                    st.success(f"Welcome to ISMEX, {new_u}! You can now Login.")         
 else:
     # START THE YELLOW STYLE ZONE
     st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
