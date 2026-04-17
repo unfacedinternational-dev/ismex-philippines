@@ -60,10 +60,6 @@ div.stButton > button:has(p:contains(".")) {
 }
 </style>
 
-
-
-
-
 # ==========================================
 # 2. DATABASE & STATE MANAGEMENT
 # ==========================================
@@ -108,7 +104,7 @@ if "ref" in st.query_params:
 # 3. USER DASHBOARD
 # ==========================================
 if st.session_state.user:
-    data = get_user_data(st.session_state.user)
+    data = get_user_data(st.session_tostate.user)
     if not data: 
         st.session_state.user = None
         st.rerun()
