@@ -358,7 +358,7 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
                         if act['type'] in ["WITHDRAW", "REINVEST"]: u_data['wallet'] += act['amount']
                         u_data['pending_actions'].pop(idx)
                         save(u, u_data)
-                        st.rerun()
+                                st.rerun()
 
     with t3:
         try:
@@ -378,34 +378,28 @@ elif st.session_state.page == "admin" and st.session_state.is_boss:
 
 elif st.session_state.page == "auth":
     t1, t2 = st.tabs(["LOGIN", "REGISTER"])
+    
     with t1:
         u_login = st.text_input("NAME").upper().strip()
         p_login = st.text_input("PIN", type="password")
         
-        # This line MUST line up with u_login
+        # Define r_data here so it exists before the button is clicked
         r_data = {}
 
-        if st.button("ENTER ISMEX DASHBORD", key="login_btn"):
-# This MUST be indented 8 spaces to be 'inside' the button
-r_data = get_user_data(u_login)
-        if r_data and str(r_data.get('pin')) == p_login:
-            st.session_state.user = u_login
-            st.rerun()
-        else:
-            st.error("Invalid Username or PIN")
-
-            # --- THE SAFETY GATE ---
-if st.session_state.user:
-    # Only runs if someone is logged in
-    u_login = st.session_state.user
-    r_data = get_user_data(u_login)
-else:
-    # Keeps the app from crashing while on the Login/Register page
-    r_data = {}
-    
+        if st.button("ENTER ISMEX DASHBOARD", key="login_btn"):
+            # Indented correctly to be 'inside' the button
+            r_data = get_user_data(u_login)
+            
             if r_data and str(r_data.get('pin')) == p_login:
                 st.session_state.user = u_login
                 st.session_state.page = "dashboard"
+                st.rerun()
+            else:
+                st.error("Invalid Username or PIN")
+
+    with t2:
+        st.info("Registration is currently managed by the Admin.")
+            
                 st.rerun()
             else:
                 st.error("Invalid Username or PIN")
