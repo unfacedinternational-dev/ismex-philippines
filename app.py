@@ -471,9 +471,8 @@ else:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-        else:
-        # START THE YELLOW STYLE ZONE
+else:
+    # START THE YELLOW STYLE ZONE
         st.markdown('<div class="landing-page-only">', unsafe_allow_html=True)
         
         # YOUR ORIGINAL ADVERTISEMENT DESIGN
@@ -508,4 +507,3 @@ else:
         if st.button(".", key="secret_boss"): 
             st.session_state.page = "boss_key"
             st.rerun()
-            
