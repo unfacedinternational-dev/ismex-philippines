@@ -108,21 +108,18 @@ if "ref" in st.query_params:
 # ==========================================
 # 3. USER DASHBOARD
 # ==========================================
-# ==========================================
-# 3. USER DASHBOARD
-# ==========================================
 if st.session_state.user:
     data = get_user_data(st.session_state.user)
     if not data: 
         st.session_state.user = None
         st.rerun()
     
-    # 1. Define variables immediately to fix NameErrors
+    # 1. Define these variables FIRST (Fixes NameError)
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
 
-    # 2. SECURE URL HANDLER (Single Button Logic)
+    # 2. SECURE URL HANDLER (Combined Logic)
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
@@ -140,9 +137,9 @@ if st.session_state.user:
             current_cycle_id = start_dt.strftime("%Y%m%d%H")
             last_claim = item.get('last_claim_id', "")
 
+            # Combined logic: Give Capital + Interest and remove the investment
             if is_op_secure and last_claim != current_cycle_id:
                 if act_type == "claim_all":
-                    # Give Capital + Interest and remove the investment
                     data['wallet'] += (item['amount'] + roi_total)
                     data['inv'].pop(idx)
                     save(st.session_state.user, data)
@@ -150,7 +147,7 @@ if st.session_state.user:
             st.query_params.clear()
             st.rerun()
 
-    # 3. DISPLAY UI
+    # 3. DISPLAY UI (Line 162 was here - now fixed)
     st.markdown(f"""
     <div class='balance-box'>
         <h3>AVAILABLE BALANCE</h3>
@@ -158,15 +155,6 @@ if st.session_state.user:
     </div>
     """, unsafe_allow_html=True)
 
-    
-            item['last_claim_id'] = current_cycle_id
-            save(st.session_state.user, data)
-        elif act_type == "pull" and last_claim != current_cycle_id:
-            data['wallet'] += (item['amount'] + roi_total)
-            data['inv'].pop(idx)
-            save(st.session_state.user, data)
-        st.query_params.clear()
-        st.rerun()
 
     st.markdown(f"""
     <div class='balance-box'>
