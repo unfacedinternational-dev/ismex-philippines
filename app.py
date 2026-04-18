@@ -112,21 +112,37 @@ if st.session_state.user:
     data = get_user_data(st.session_state.user)
     if not data: 
         st.session_state.user = None
-        st.rerun()
-    
-    wallet = float(data.get('wallet', 0.0))
-    ph_now = datetime.now() + timedelta(hours=8)
-    req_id = ph_now.strftime("%f")
-
-    # URL HANDLER FOR CAPITAL BUTTONS
+            # URL HANDLER FOR CAPITAL & INTEREST
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
         idx = int(qp["idx"])
         item = data['inv'][idx]
+        
+        # Security check: recalculate time window
+        start_dt = datetime.fromisoformat(item['start_time'])
+        end_dt = start_dt + timedelta(days=7)
+        pull_out_end = end_dt + timedelta(hours=1)
+        is_op_secure = end_dt <= ph_now <= pull_out_end
+
         roi_total = item['amount'] * 0.20
-        current_cycle_id = datetime.fromisoformat(item['start_time']).strftime("%Y%m%d%H")
+        current_cycle_id = start_dt.strftime("%Y%m%d%H")
         last_claim = item.get('last_claim_id', "")
+
+        # Only execute if the window is open and not already claimed
+        if is_op_secure and last_claim != current_cycle_id:
+            if act_type == "claim_all":
+                # Combined logic: Give Capital + Interest and remove the investment
+                data['wallet'] += (item['amount'] + roi_total)
+                data['inv'].pop(idx)
+                save(st.session_state.user, data)
+            
+            st.query_params.clear()
+            st.rerun()
+        else:
+            st.query_params.clear()
+            st.rerun()
+        
 
         if act_type == "claim" and last_claim != current_cycle_id:
             data['wallet'] += roi_total
