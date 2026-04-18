@@ -108,18 +108,21 @@ if "ref" in st.query_params:
 # ==========================================
 # 3. USER DASHBOARD
 # ==========================================
+# ==========================================
+# 3. USER DASHBOARD
+# ==========================================
 if st.session_state.user:
     data = get_user_data(st.session_state.user)
     if not data: 
         st.session_state.user = None
         st.rerun()
     
-    # Define these variables FIRST so the rest of the app can see them
+    # 1. Define variables immediately to fix NameErrors
     wallet = float(data.get('wallet', 0.0))
     ph_now = datetime.now() + timedelta(hours=8)
     req_id = ph_now.strftime("%f")
 
-    # SECURE URL HANDLER (Combined Logic)
+    # 2. SECURE URL HANDLER (Single Button Logic)
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
@@ -137,10 +140,9 @@ if st.session_state.user:
             current_cycle_id = start_dt.strftime("%Y%m%d%H")
             last_claim = item.get('last_claim_id', "")
 
-            # Only execute if the 1-hour window is open
             if is_op_secure and last_claim != current_cycle_id:
                 if act_type == "claim_all":
-                    # Combined logic: Give Capital + Interest and remove the investment
+                    # Give Capital + Interest and remove the investment
                     data['wallet'] += (item['amount'] + roi_total)
                     data['inv'].pop(idx)
                     save(st.session_state.user, data)
@@ -148,13 +150,14 @@ if st.session_state.user:
             st.query_params.clear()
             st.rerun()
 
-    # DISPLAY BALANCE BOX
+    # 3. DISPLAY UI
     st.markdown(f"""
     <div class='balance-box'>
         <h3>AVAILABLE BALANCE</h3>
         <h1>₱{max(0.0, wallet):,.2f}</h1>
     </div>
     """, unsafe_allow_html=True)
+
     
             item['last_claim_id'] = current_cycle_id
             save(st.session_state.user, data)
