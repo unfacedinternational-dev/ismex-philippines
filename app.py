@@ -105,15 +105,21 @@ if 'action_type' not in st.session_state: st.session_state.action_type = None
 if "ref" in st.query_params:
     st.session_state["captured_ref"] = st.query_params["ref"].replace("+", " ").upper().strip()
 
-
-
 # ==========================================
 # 3. USER DASHBOARD
 # ==========================================
 if st.session_state.user:
     data = get_user_data(st.session_state.user)
     if not data: 
-            # SECURE URL HANDLER (Combined Logic)
+        st.session_state.user = None
+        st.rerun()
+    
+    # Define these variables FIRST so the rest of the app can see them
+    wallet = float(data.get('wallet', 0.0))
+    ph_now = datetime.now() + timedelta(hours=8)
+    req_id = ph_now.strftime("%f")
+
+    # SECURE URL HANDLER (Combined Logic)
     qp = st.query_params
     if "act" in qp:
         act_type = qp["act"]
@@ -131,8 +137,10 @@ if st.session_state.user:
             current_cycle_id = start_dt.strftime("%Y%m%d%H")
             last_claim = item.get('last_claim_id', "")
 
+            # Only execute if the 1-hour window is open
             if is_op_secure and last_claim != current_cycle_id:
                 if act_type == "claim_all":
+                    # Combined logic: Give Capital + Interest and remove the investment
                     data['wallet'] += (item['amount'] + roi_total)
                     data['inv'].pop(idx)
                     save(st.session_state.user, data)
@@ -140,24 +148,14 @@ if st.session_state.user:
             st.query_params.clear()
             st.rerun()
 
-        # Only execute if the window is open and not already claimed
-        if is_op_secure and last_claim != current_cycle_id:
-            if act_type == "claim_all":
-                # Combined logic: Give Capital + Interest and remove the investment
-                data['wallet'] += (item['amount'] + roi_total)
-                data['inv'].pop(idx)
-                save(st.session_state.user, data)
-            
-            st.query_params.clear()
-            st.rerun()
-        else:
-            st.query_params.clear()
-            st.rerun()
-        
-
-        if act_type == "claim" and last_claim != current_cycle_id:
-            data['wallet'] += roi_total
-            item['start_time'] = ph_now.isoformat()
+    # DISPLAY BALANCE BOX
+    st.markdown(f"""
+    <div class='balance-box'>
+        <h3>AVAILABLE BALANCE</h3>
+        <h1>₱{max(0.0, wallet):,.2f}</h1>
+    </div>
+    """, unsafe_allow_html=True)
+    
             item['last_claim_id'] = current_cycle_id
             save(st.session_state.user, data)
         elif act_type == "pull" and last_claim != current_cycle_id:
@@ -301,7 +299,7 @@ async function copyRef() {{
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
         
-    st.subheader("🚀 RUNNING CAPITALS")
+        st.subheader("🚀 RUNNING CAPITALS")
     for idx, item in enumerate(list(data.get('inv', []))):
         start_dt = datetime.fromisoformat(item['start_time'])
         end_dt = start_dt + timedelta(days=7)
@@ -318,7 +316,10 @@ async function copyRef() {{
         live_profit = progress * roi_total
         
         is_op = end_dt <= ph_now <= pull_out_end
-        dis_class = "" if is_op else "disabled"
+        
+        # Disable style for the button
+        dis_style = "pointer-events: none; opacity: 0.4;" if not is_op else ""
+        button_href = f"/?act=claim_all&idx={idx}" if is_op else "#"
 
         st.markdown(f"""
 <div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid #00ff88; margin-bottom: 10px; border-right: 1px solid #30363d; border-top: 1px solid #30363d; border-bottom: 1px solid #30363d;">
@@ -333,10 +334,13 @@ async function copyRef() {{
         <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b> until <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
         <i style="color: #ff4b4b;">*Auto-reinvests after {pull_out_end.strftime('%I:%M %p')}</i>
     </div>
-    <a href="/?act=claim&idx={idx}" target="_self" class="nested-btn {dis_class}">press here to CLAIM INTEREST on schedule</a>
-    <a href="/?act=pull&idx={idx}" target="_self" class="nested-btn {dis_class}">press to PULL OUT CAPITAL on schedule</a>
+    <a href="{button_href}" target="_self" 
+       style="{dis_style} display: block; text-align: center; background-color: #1c2128; color: #00ff88; border: 1px solid #00ff88; padding: 12px; margin-top: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.85em;">
+       claim capital w/ interest here during schedule
+    </a>
 </div>
 """, unsafe_allow_html=True)
+
 
     st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
