@@ -364,6 +364,34 @@ async function copyRef() {{
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
     <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
+    st.subheader("🚀 RUNNING CAPITALS")
+    for idx, item in enumerate(list(data.get('inv', []))):
+        start_dt = datetime.fromisoformat(item['start_time'])
+        end_dt = start_dt + timedelta(days=7)
+        pull_out_end = end_dt + timedelta(hours=1)
+        
+        # 1. AUTO-REINVEST LOGIC
+        if ph_now > pull_out_end:
+            item['start_time'] = ph_now.isoformat()
+            save(st.session_state.user, data)
+            st.rerun()
+
+        # 2. CALCULATIONS
+        roi_total = item['amount'] * 0.20
+        elapsed = (ph_now - start_dt).total_seconds()
+        progress = min(1.0, elapsed / 604800)
+        live_profit = progress * roi_total
+        is_in_window = end_dt <= ph_now <= pull_out_end
+
+        # 3. UNIFIED UI BOX (Removes the old blue links)
+        st.markdown(f"""
+<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid {'#00ff88' if is_in_window else '#8b949e'}; margin-bottom: 10px; border: 1px solid #30363d;">
+    <div style="display: flex; justify-content: space-between;">
+        <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
+        <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
+    </div>
+    <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
+    <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
         ⚠️ <b>STRICT 1-HOUR CLAIM WINDOW:</b><br>
         Opens: <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b><br>
         Closes: <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
@@ -374,21 +402,26 @@ async function copyRef() {{
 </div>
 """, unsafe_allow_html=True)
 
-        # 4. THE PERMANENT BUTTON TEXT
-        # This fulfills your request: includes date and hour, visible at all times.
+        # 4. THE PERMANENT BUTTON WITH DATE AND TIME
+        # This label matches your requirement: "CLAIM HERE BY (Date and Hour)"
         claim_label = f"CLAIM HERE BY {pull_out_end.strftime('%b %d, %Y at %I:%M %p')}"
 
-        if st.button(claim_label, key=f"claim_fixed_{idx}", disabled=not is_in_window):
+        if st.button(claim_label, key=f"claim_v3_{idx}", disabled=not is_in_window):
+            # Update wallet with Capital + 20% ROI
             data['wallet'] = data.get('wallet', 0.0) + item['amount'] + roi_total
+            
+            # Record to history
             data.setdefault('history', []).append({
                 "type": "CLAIMED", 
                 "amount": item['amount'] + roi_total, 
                 "status": "SUCCESS", 
                 "date": ph_now.strftime("%Y-%m-%d")
             })
+            
+            # Remove this investment so they must manually Reinvest
             data['inv'].pop(idx)
             save(st.session_state.user, data)
-            st.success("Claim Successful!")
+            st.success("Claim Successful! Balance Updated.")
             time.sleep(1)
             st.rerun()
             
