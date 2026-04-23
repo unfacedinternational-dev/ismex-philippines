@@ -77,25 +77,6 @@ def get_db():
         return firestore.Client(credentials=creds)
     return None
 
-db = get_db()
-
-def get_user_data(username):
-    doc = db.collection("investors").document(username).get()
-    return doc.to_dict() if doc.exists else None
-
-def load_reg(): 
-    return {doc.id: doc.to_dict() for doc in db.collection("investors").stream()}
-
-def save(n, d): 
-    db.collection("investors").document(n).set(d)
-
-def atomic_update(username, update_dict):
-    user_ref = db.collection("investors").document(username)
-    @firestore.transactional
-    def _do(transaction, ref):
-        transaction.update(ref, update_dict)
-    atomic_tx = db.transaction()
-    _do(atomic_tx, user_ref)
 
 if 'user' not in st.session_state: st.session_state.user = None
 if 'page' not in st.session_state: st.session_state.page = 'landing'
@@ -392,6 +373,34 @@ async function copyRef() {{
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
     <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
+    st.subheader("🚀 RUNNING CAPITALS")
+    for idx, item in enumerate(list(data.get('inv', []))):
+        start_dt = datetime.fromisoformat(item['start_time'])
+        end_dt = start_dt + timedelta(days=7)
+        pull_out_end = end_dt + timedelta(hours=1)
+        
+        # 1. AUTO-REINVEST LOGIC
+        if ph_now > pull_out_end:
+            item['start_time'] = ph_now.isoformat()
+            save(st.session_state.user, data)
+            st.rerun()
+
+        # 2. CALCULATIONS
+        roi_total = item['amount'] * 0.20
+        elapsed = (ph_now - start_dt).total_seconds()
+        progress = min(1.0, elapsed / 604800)
+        live_profit = progress * roi_total
+        is_in_window = end_dt <= ph_now <= pull_out_end
+
+        # 3. UNIFIED UI BOX (Removes the old blue links)
+        st.markdown(f"""
+<div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid {'#00ff88' if is_in_window else '#8b949e'}; margin-bottom: 10px; border: 1px solid #30363d;">
+    <div style="display: flex; justify-content: space-between;">
+        <span style="color: #8b949e; font-weight: bold;">CAPITAL: ₱{item['amount']:,.2f}</span>
+        <span style="color: #00ff88; font-weight: bold;">ROI: ₱{roi_total:,.2f}</span>
+    </div>
+    <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
+    <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
         ⚠️ <b>STRICT 1-HOUR CLAIM WINDOW:</b><br>
         Opens: <b>{end_dt.strftime('%Y-%m-%d %I:%M %p')}</b><br>
         Closes: <b>{pull_out_end.strftime('%I:%M %p')}</b><br>
@@ -424,7 +433,6 @@ async function copyRef() {{
             st.success("Claim Successful! Balance Updated.")
             time.sleep(1)
             st.rerun()
-            
 
     st.subheader("📜 My History")
     for h in reversed(data.get('history', [])):
