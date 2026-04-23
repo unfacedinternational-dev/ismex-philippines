@@ -319,7 +319,7 @@ async function copyRef() {{
         if ph_now < end_dt:
             claim_label = f"CLAIM OPENS AT {end_dt.strftime('%I:%M %p')}"
         else:
-            claim_label = f"CLAIM HERE BY {pull_out_end.strftime('%I:%M %p')}"
+            claim_label = f"CLICK HERE TO CLAIM CAPITAL & INTEREST ON DUE DATE AT {pull_out_end.strftime('%I:%M %p')}"
 
         # The 'disabled' argument is True if NOT in the window, making it unclickable
         if st.button(claim_label, key=f"claim_{idx}", disabled=not is_in_window):
