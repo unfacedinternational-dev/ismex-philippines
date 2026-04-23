@@ -336,13 +336,6 @@ async function copyRef() {{
             data['inv'].pop(idx)
             save(st.session_state.user, data)
             st.success("Claim Successful! Balance Updated.")
-            time.sleep(1)
-            st.rerun()
-        
-        elapsed = (ph_now - start_dt).total_seconds()
-        progress = min(1.0, elapsed / 604800)
-        roi_total = item['amount'] * 0.20
-        live_profit = progress * roi_total
     st.subheader("🚀 RUNNING CAPITALS")
     for idx, item in enumerate(list(data.get('inv', []))):
         start_dt = datetime.fromisoformat(item['start_time'])
@@ -362,7 +355,7 @@ async function copyRef() {{
         live_profit = progress * roi_total
         is_in_window = end_dt <= ph_now <= pull_out_end
 
-        # 3. UI BOX DESIGN
+        # 3. UI CARD DESIGN
         st.markdown(f"""
 <div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid {'#00ff88' if is_in_window else '#8b949e'}; margin-bottom: 10px; border: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
@@ -381,11 +374,11 @@ async function copyRef() {{
 </div>
 """, unsafe_allow_html=True)
 
-        # 4. UPDATED BUTTON TEXT (Includes Date and Hour)
-        # This label stays visible whether the button is disabled or active
+        # 4. THE PERMANENT BUTTON TEXT
+        # This fulfills your request: includes date and hour, visible at all times.
         claim_label = f"CLAIM HERE BY {pull_out_end.strftime('%b %d, %Y at %I:%M %p')}"
 
-        if st.button(claim_label, key=f"claim_final_{idx}", disabled=not is_in_window):
+        if st.button(claim_label, key=f"claim_fixed_{idx}", disabled=not is_in_window):
             data['wallet'] = data.get('wallet', 0.0) + item['amount'] + roi_total
             data.setdefault('history', []).append({
                 "type": "CLAIMED", 
