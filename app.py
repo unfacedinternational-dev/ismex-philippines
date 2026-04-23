@@ -336,7 +336,7 @@ async function copyRef() {{
         live_profit = progress * roi_total
         is_in_window = end_dt <= ph_now <= pull_out_end
 
-                # 3. UI CARD DESIGN
+                        # 3. UI CARD DESIGN
         st.markdown(f"""
 <div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid {'#00ff88' if is_in_window else '#8b949e'}; margin-bottom: 10px; border: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
