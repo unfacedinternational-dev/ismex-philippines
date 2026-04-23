@@ -336,7 +336,7 @@ async function copyRef() {{
         live_profit = progress * roi_total
         is_in_window = end_dt <= ph_now <= pull_out_end
 
-        # 3. UI CARD DESIGN
+                # 3. UI CARD DESIGN
         st.markdown(f"""
 <div style="background-color: #1c2128; padding: 15px; border-radius: 10px; border-left: 5px solid {'#00ff88' if is_in_window else '#8b949e'}; margin-bottom: 10px; border: 1px solid #30363d;">
     <div style="display: flex; justify-content: space-between;">
@@ -345,11 +345,15 @@ async function copyRef() {{
     </div>
     <div style="margin-top: 5px; color: white; font-size: 0.9em;">LIVE PROFIT: ₱{live_profit:,.2f}</div>
     <div style="color: #e3b341; font-size: 0.8em; margin-top: 10px; line-height: 1.3;">
-    st.subheader("🚀 RUNNING CAPITALS")
-    for idx, item in enumerate(list(data.get('inv', []))):
-        start_dt = datetime.fromisoformat(item['start_time'])
-        end_dt = start_dt + timedelta(days=7)
-        pull_out_end = end_dt + timedelta(hours=1)
+        ⚠️ <b>STRICT 1-HOUR CLAIM WINDOW:</b><br>
+        Deadline: <b>{pull_out_end.strftime('%b %d, %Y at %I:%M %p')}</b><br>
+        <i style="color: {'#00ff88' if is_in_window else '#ff4b4b'};">
+            {'● WINDOW IS OPEN NOW' if is_in_window else '*Claiming is currently locked'}
+        </i>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+        
         
         # 1. AUTO-REINVEST LOGIC
         if ph_now > pull_out_end:
